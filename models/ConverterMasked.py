@@ -48,7 +48,7 @@ class ConverterMasked(ConverterBase):
             
     #override
     def dummy_predict(self):
-        self.predictor ( np.zeros ( (self.predictor_input_size,self.predictor_input_size,4) ) )
+        self.predictor ( np.zeros ( (self.predictor_input_size,self.predictor_input_size,4), dtype=np.float32 ) )
         
     #override
     def convert (self, img_bgr, img_face_landmarks, debug):        

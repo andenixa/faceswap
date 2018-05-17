@@ -4,6 +4,7 @@ from .BaseTypes import TrainingDataSample
 from .ModelBase import ModelBase
 from .ConverterBase import ConverterBase
 from .ConverterMasked import ConverterMasked
+from .ConverterAvatar import ConverterAvatar
 from .TrainingDataGeneratorBase import TrainingDataGeneratorBase
 from .TrainingDataGenerator import TrainingDataGenerator
 

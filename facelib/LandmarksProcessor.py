@@ -41,11 +41,13 @@ def get_transform_mat (image_landmarks, output_size, face_type):
         a, c = mat[0,0], mat[1,0]
         scale = math.sqrt((a * a) + (c * c))
         
+        padding = (output_size // 64) * 32
+        
         mat = np.eye ( 2,3 )
         mat[0,2] = -centroid[0]
         mat[1,2] = -centroid[1]
-        mat = mat * scale * (output_size / 4)
-        mat[:,2] += output_size / 2        
+        mat = mat * scale * (output_size / 3)
+        mat[:,2] += output_size / 2
     else:
         if face_type == FaceType.HALF:
             padding = 0

@@ -126,26 +126,51 @@ class ConvertSubprocessor(SubprocessorBase):
     #override
     def onClientProcessData(self, data):
         filename_path = Path(data)
-        output_filename_path = self.output_path / filename_path.name
+        
             
         files_processed = 1
         faces_processed = 0
-        if filename_path.stem not in self.alignments.keys():                        
+        
+        if self.converter.is_avatar_mode():        
+            image = (cv2.imread(str(filename_path)) / 255.0).astype(np.float32)            
+            a_png = AlignedPNG.load( str(filename_path) )
+            if a_png is None:
+                raise Exception ("%s - no embedded data found." % ( str(filename_path)) )
+            d = a_png.getFaceswapDictData()
+            if d is None or d['source_filename'] is None or d['landmarks'] is None:
+                raise Exception ("%s - no embedded data found." % ( str(filename_path) ))
+
+            image_landmarks = np.array (d['landmarks'])
+            image = self.converter.convert_avatar(image, image_landmarks, self.debug)     
+
+            if self.debug:
+                for img in image:
+                    cv2.imshow ('Debug convert', img )
+                    cv2.waitKey(0)
+                    
             if not self.debug:
-                print ( 'no faces found for %s, copying without faces' % (filename_path.name) )                
-                shutil.copy ( str(filename_path), str(output_filename_path) )                
-        else:                    
-            image = (cv2.imread(str(filename_path)) / 255.0).astype('float32')
-            faces = self.alignments[filename_path.stem]
-            for image_landmarks in faces:                
-                image = self.converter.convert(image, image_landmarks, self.debug)     
-                if self.debug:
-                    for img in image:
-                        cv2.imshow ('Debug convert', img )
-                        cv2.waitKey(0)
-            if not self.debug:
+                output_filename_path = self.output_path / d['source_filename']
                 cv2.imwrite (str(output_filename_path), (image*255).astype(np.uint8) )
-            faces_processed = len(faces)
+                    
+            faces_processed = 1
+        else:
+            output_filename_path = self.output_path / filename_path.name
+            if filename_path.stem not in self.alignments.keys():                        
+                if not self.debug:
+                    print ( 'no faces found for %s, copying without faces' % (filename_path.name) )
+                    shutil.copy ( str(filename_path), str(output_filename_path) )
+            else:                    
+                image = (cv2.imread(str(filename_path)) / 255.0).astype(np.float32)
+                faces = self.alignments[filename_path.stem]
+                for image_landmarks in faces:                
+                    image = self.converter.convert(image, image_landmarks, self.debug)     
+                    if self.debug:
+                        for img in image:
+                            cv2.imshow ('Debug convert', img )
+                            cv2.waitKey(0)
+                if not self.debug:
+                    cv2.imwrite (str(output_filename_path), (image*255).astype(np.uint8) )
+                faces_processed = len(faces)
             
         return (files_processed, faces_processed)
         
@@ -187,25 +212,25 @@ def main (input_dir, output_dir, aligned_dir, model_dir, model_name, **in_option
         if not model_path.exists():
             print('Model directory not found. Please ensure it exists.')
             return
-            
-        aligned_path_image_paths = Path_utils.get_image_paths(aligned_path)
-        
-        alignments = {}
-        for filename in tqdm(aligned_path_image_paths, desc= "Collecting alignments" ):
-            a_png = AlignedPNG.load( str(filename) )
-            if a_png is None:
-                print ( "%s - no embedded data found." % (filename) )
-                continue
-            d = a_png.getFaceswapDictData()
-            if d is None or d['source_filename'] is None or d['source_rect'] is None or d['source_landmarks'] is None:
-                print ( "%s - no embedded data found." % (filename) )
-                continue
-            
-            source_filename_stem = Path(d['source_filename']).stem
-            if source_filename_stem not in alignments.keys():
-                alignments[ source_filename_stem ] = []
 
-            alignments[ source_filename_stem ].append ( np.array(d['source_landmarks']) )
+        alignments = {}
+        if model_name != 'AVATAR':
+            aligned_path_image_paths = Path_utils.get_image_paths(aligned_path)
+            for filename in tqdm(aligned_path_image_paths, desc= "Collecting alignments" ):
+                a_png = AlignedPNG.load( str(filename) )
+                if a_png is None:
+                    print ( "%s - no embedded data found." % (filename) )
+                    continue
+                d = a_png.getFaceswapDictData()
+                if d is None or d['source_filename'] is None or d['source_rect'] is None or d['source_landmarks'] is None:
+                    print ( "%s - no embedded data found." % (filename) )
+                    continue
+                
+                source_filename_stem = Path(d['source_filename']).stem
+                if source_filename_stem not in alignments.keys():
+                    alignments[ source_filename_stem ] = []
+
+                alignments[ source_filename_stem ].append ( np.array(d['source_landmarks']) )
             
         model_sq = multiprocessing.Queue()
         model_cq = multiprocessing.Queue()
@@ -231,6 +256,29 @@ def main (input_dir, output_dir, aligned_dir, model_dir, model_name, **in_option
                               
         model_sq.put ( {'op':'close'} )
         model_p.join()
+        
+                    
+        if model_name == 'AVATAR':
+            output_path_image_paths = Path_utils.get_image_paths(output_path)
+            
+            last_ok_frame = -1
+            for filename in output_path_image_paths:
+                filename_path = Path(filename)
+                stem = Path(filename).stem
+                try:
+                    frame = int(stem)
+                except:
+                    raise Exception ('Aligned avatars must be created from indexed sequence files.')
+                    
+                if frame-last_ok_frame > 1:
+                    start = last_ok_frame + 1
+                    end = frame - 1
+                    
+                    print ("Filling gaps: [%d...%d]" % (start, end) )
+                    for i in range (start, end+1):                    
+                        shutil.copy ( str(filename), str( output_path / ('%.5d%s' % (i, filename_path.suffix ))  ) )
+                    
+                last_ok_frame = frame
         
     except Exception as e:
         print ( 'Error: %s' % (str(e)))

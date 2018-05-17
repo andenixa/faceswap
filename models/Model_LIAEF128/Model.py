@@ -157,7 +157,7 @@ class Model(ModelBase):
     def Intermediate(self):
         input_layer = self.keras.layers.Input(shape=(None, 8 * 8 * 1024))
         x = input_layer
-        x = self.keras.layers.Dense(512)(x)
+        x = self.keras.layers.Dense(256)(x)
         x = self.keras.layers.Dense(8 * 8 * 512)(x)
         x = self.keras.layers.Reshape((8, 8, 512))(x)
         x = upscale(self.keras, x, 512)

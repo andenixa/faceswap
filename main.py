@@ -103,36 +103,37 @@ if __name__ == "__main__":
     
     def process_convert(arguments):
         if arguments.ask_for_params:
-            try:
-                mode = int ( input ("Choose mode: (1) hist match, (2) hist match bw, (3) seamless (default), (4) seamless hist match : ") )
-            except:
-                mode = 3
-                
-            if mode == 1:
-                arguments.mode = 'hist-match'
-            elif mode == 2:
-                arguments.mode = 'hist-match-bw'
-            elif mode == 3:
-                arguments.mode = 'seamless'
-            elif mode == 4:
-                arguments.mode = 'seamless-hist-match'
-            
-            if arguments.mode == 'hist-match' or arguments.mode == 'hist-match-bw':
+            if arguments.model_name != 'AVATAR':
                 try:
-                    choice = int ( input ("Masked hist match? [0..1] (default - model choice) : ") )
-                    arguments.masked_hist_match = (choice != 0)
+                    mode = int ( input ("Choose mode: (1) hist match, (2) hist match bw, (3) seamless (default), (4) seamless hist match : ") )
                 except:
-                    arguments.masked_hist_match = None               
-            
-            try:
-                arguments.erode_mask_modifier = int ( input ("Choose erode mask modifier [-100..100] (default 0) : ") )
-            except:
-                arguments.erode_mask_modifier = 0
+                    mode = 3
+                    
+                if mode == 1:
+                    arguments.mode = 'hist-match'
+                elif mode == 2:
+                    arguments.mode = 'hist-match-bw'
+                elif mode == 3:
+                    arguments.mode = 'seamless'
+                elif mode == 4:
+                    arguments.mode = 'seamless-hist-match'
                 
-            try:
-                arguments.blur_mask_modifier = int ( input ("Choose blur mask modifier [-100..200] (default 0) : ") )
-            except:
-                arguments.blur_mask_modifier = 0
+                if arguments.mode == 'hist-match' or arguments.mode == 'hist-match-bw':
+                    try:
+                        choice = int ( input ("Masked hist match? [0..1] (default - model choice) : ") )
+                        arguments.masked_hist_match = (choice != 0)
+                    except:
+                        arguments.masked_hist_match = None               
+                
+                try:
+                    arguments.erode_mask_modifier = int ( input ("Choose erode mask modifier [-100..100] (default 0) : ") )
+                except:
+                    arguments.erode_mask_modifier = 0
+                    
+                try:
+                    arguments.blur_mask_modifier = int ( input ("Choose blur mask modifier [-100..200] (default 0) : ") )
+                except:
+                    arguments.blur_mask_modifier = 0
     
         arguments.erode_mask_modifier = np.clip ( int(arguments.erode_mask_modifier), -100, 100)
         arguments.blur_mask_modifier = np.clip ( int(arguments.blur_mask_modifier), -100, 200)
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     convert_parser = subparsers.add_parser( "convert", help="Converter") 
     convert_parser.add_argument('--input-dir', required=True, action=fixPathAction, dest="input_dir", help="Input directory. A directory containing the files you wish to process.")
     convert_parser.add_argument('--output-dir', required=True, action=fixPathAction, dest="output_dir", help="Output directory. This is where the converted files will be stored.")
-    convert_parser.add_argument('--aligned-dir', required=True, action=fixPathAction, dest="aligned_dir", help="Aligned directory. This is where the aligned files stored.")
+    convert_parser.add_argument('--aligned-dir', action=fixPathAction, dest="aligned_dir", help="Aligned directory. This is where the aligned files stored. Not used in AVATAR model.")
     convert_parser.add_argument('--model-dir', required=True, action=fixPathAction, dest="model_dir", help="Model dir.")
     convert_parser.add_argument('--model', required=True, dest="model_name", choices=Path_utils.get_all_dir_names_startswith ( Path(__file__).parent / 'models' , 'Model_'), help="Type of model")
     convert_parser.add_argument('--ask-for-params', action="store_true", dest="ask_for_params", default=False, help="Ask for params.")    

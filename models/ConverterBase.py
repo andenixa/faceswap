@@ -10,7 +10,18 @@ class ConverterBase(object):
         self.predictor = predictor
         
     #overridable
-    def convert (self, image, image_face_landmarks, debug):
+    def is_avatar_mode(self):
+        #if true, convert_avatar will be called
+        return False
+        
+    #overridable
+    def convert (self, img_bgr, img_face_landmarks, debug):
+        #return float32 image        
+        #if debug , return tuple ( images of any size and channels, ...)
+        return image
+        
+    #overridable
+    def convert_avatar (self, img_bgr, img_face_landmarks, debug):
         #return float32 image        
         #if debug , return tuple ( images of any size and channels, ...)
         return image
