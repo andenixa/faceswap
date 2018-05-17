@@ -9,7 +9,7 @@ from enum import IntEnum
 '''
 generates full face images 
     random_flip 
-    output_sample_types is FullFaceTrainingDataGenerator.SampleType
+    output_sample_types_flags is TrainingDataGenerator.SampleTypeFlags
 '''   
 class TrainingDataGenerator(TrainingDataGeneratorBase):
     class SampleTypeFlags(IntEnum):
@@ -85,11 +85,11 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
             else:
                 raise ValueError ('expected SampleTypeFlags face type')
                 
-            if target_face_type <= sample.face_type:
-                source = cv2.warpAffine( source, LandmarksProcessor.get_transform_mat (sample.landmarks, size, target_face_type), (size,size), flags=cv2.INTER_LANCZOS4 )
-            else:
+            if target_face_type > sample.face_type:
                 raise Exception ('sample %s type %s does not match model requirement %s. Consider extract necessary type of faces.' % (sample.filename, sample.face_type, target_face_type) )
-                
+
+            source = cv2.warpAffine( source, LandmarksProcessor.get_transform_mat (sample.landmarks, size, target_face_type), (size,size), flags=cv2.INTER_LANCZOS4 )
+ 
             if t & self.SampleTypeFlags.MODE_BGR != 0:
                 source = source[...,0:3]
             elif t & self.SampleTypeFlags.MODE_G != 0:
@@ -156,13 +156,13 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         
         mapx = cv2.resize(mapx, (w+cell_size,)*2 )[half_cell_size:-half_cell_size-1,half_cell_size:-half_cell_size-1].astype(np.float32)
         mapy = cv2.resize(mapy, (w+cell_size,)*2 )[half_cell_size:-half_cell_size-1,half_cell_size:-half_cell_size-1].astype(np.float32)
-        warped = cv2.remap(image_bgrm, mapx, mapy, cv2.INTER_LANCZOS4 )
+        warped_bgrm = cv2.remap(image_bgrm, mapx, mapy, cv2.INTER_LANCZOS4 )
         
         #random transform                                   
         random_transform_mat = cv2.getRotationMatrix2D((w // 2, w // 2), rotation, scale)
         random_transform_mat[:, 2] += (tx*w, ty*w)
 
-        target_bgrm = cv2.warpAffine( image_bgrm, random_transform_mat, (w, w), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )        
-        warped_bgrm = cv2.warpAffine( warped,  random_transform_mat, (w, w), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )
+        warped_bgrm = cv2.warpAffine( warped_bgrm, random_transform_mat, (w, w), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )
+        target_bgrm = cv2.warpAffine( image_bgrm , random_transform_mat, (w, w), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )        
         
         return warped_bgrm, target_bgrm, image_bgrm
