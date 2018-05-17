@@ -149,7 +149,8 @@ if __name__ == "__main__":
             mode = arguments.mode,
             masked_hist_match = arguments.masked_hist_match,
             erode_mask_modifier = arguments.erode_mask_modifier,
-            blur_mask_modifier = arguments.blur_mask_modifier
+            blur_mask_modifier = arguments.blur_mask_modifier,
+            force_best_gpu_idx = arguments.force_best_gpu_idx
             )
         
     convert_parser = subparsers.add_parser( "convert", help="Converter") 
@@ -164,6 +165,7 @@ if __name__ == "__main__":
     convert_parser.add_argument('--erode-mask-modifier', type=int, dest="erode_mask_modifier", default=0, help="Automatic erode mask modifier. Valid range [-100..100].")
     convert_parser.add_argument('--blur-mask-modifier', type=int, dest="blur_mask_modifier", default=0, help="Automatic blur mask modifier. Valid range [-100..200].")    
     convert_parser.add_argument('--debug', action="store_true", dest="debug", default=False, help="Debug converter.")
+    convert_parser.add_argument('--force-best-gpu-idx', type=int, dest="force_best_gpu_idx", default=-1, help="Force to choose this GPU idx as best.")
     
     convert_parser.set_defaults(func=process_convert)
 
