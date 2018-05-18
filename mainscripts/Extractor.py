@@ -18,7 +18,7 @@ from utils.SubprocessorBase import SubprocessorBase
 class ExtractSubprocessor(SubprocessorBase):
 
     #override
-    def __init__(self, input_data, type, image_size, face_type, debug, multi_gpu=False, manual=False, detector=None, output_path=None ): 
+    def __init__(self, input_data, type, image_size, face_type, debug, multi_gpu=False, manual=False, manual_window_size=0, detector=None, output_path=None ): 
         self.input_data = input_data
         self.type = type
         self.image_size = image_size
@@ -28,7 +28,8 @@ class ExtractSubprocessor(SubprocessorBase):
         self.detector = detector
         self.output_path = output_path        
         self.manual = manual        
-        self.result = []       
+        self.manual_window_size = manual_window_size
+        self.result = []
 
         no_response_time_sec = 60 if not self.manual else 999999
         super().__init__('Extractor', no_response_time_sec)           
@@ -38,9 +39,7 @@ class ExtractSubprocessor(SubprocessorBase):
         if self.manual == True:
             self.wnd_name = 'Manual pass'
             cv2.namedWindow(self.wnd_name)
-            
-            self.view_scale_to = 0 #1368
-            
+
             self.landmarks = None
             self.param_x = -1
             self.param_y = -1
@@ -117,7 +116,7 @@ class ExtractSubprocessor(SubprocessorBase):
                     self.original_image = cv2.imread(filename)
                     
                     (h,w,c) = self.original_image.shape
-                    self.view_scale = 1.0 if self.view_scale_to == 0 else self.view_scale_to / (w if w > h else h)
+                    self.view_scale = 1.0 if self.manual_window_size == 0 else self.manual_window_size / (w if w > h else h)
                     self.original_image = cv2.resize (self.original_image, ( int(w*self.view_scale), int(h*self.view_scale) ), interpolation=cv2.INTER_LINEAR)    
                     
                     self.text_lines_img = (image_utils.get_draw_text_lines ( self.original_image, (0,0, self.original_image.shape[1], min(100, self.original_image.shape[0]) ),
@@ -311,7 +310,7 @@ face_type
     'full_face'
     'avatar'
 '''
-def main (input_dir, output_dir, debug, detector='mt', multi_gpu=True, manual_fix=False, image_size=256, face_type='full_face'):
+def main (input_dir, output_dir, debug, detector='mt', multi_gpu=True, manual_fix=False, manual_window_size=0, image_size=256, face_type='full_face'):
     print ("Running extractor.\r\n")
     
     input_path = Path(input_dir)
@@ -342,7 +341,7 @@ def main (input_dir, output_dir, debug, detector='mt', multi_gpu=True, manual_fi
     if images_found != 0:    
         if detector == 'manual':
             print ('Performing manual extract...')
-            extracted_faces = ExtractSubprocessor ([ (filename,[]) for filename in input_path_image_paths ], 'landmarks', image_size, face_type, debug, manual=True).process()
+            extracted_faces = ExtractSubprocessor ([ (filename,[]) for filename in input_path_image_paths ], 'landmarks', image_size, face_type, debug, manual=True, manual_window_size=manual_window_size).process()
         else:
             print ('Performing 1st pass...')
             extracted_rects = ExtractSubprocessor ([ (x,) for x in input_path_image_paths ], 'rects', image_size, face_type, debug, multi_gpu=multi_gpu, manual=False, detector=detector).process()
@@ -356,7 +355,7 @@ def main (input_dir, output_dir, debug, detector='mt', multi_gpu=True, manual_fi
                 if all ( np.array ( [ len(data[1]) > 0 for data in extracted_faces] ) == True ):
                     print ('All faces are detected, manual fix not needed.')
                 else:
-                    extracted_faces = ExtractSubprocessor (extracted_faces, 'landmarks', image_size, face_type, debug, manual=True).process()
+                    extracted_faces = ExtractSubprocessor (extracted_faces, 'landmarks', image_size, face_type, debug, manual=True, manual_window_size=manual_window_size).process()
 
         if len(extracted_faces) > 0:
             print ('Performing 3rd pass...')

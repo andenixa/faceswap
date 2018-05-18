@@ -38,16 +38,19 @@ if __name__ == "__main__":
             face_type=arguments.face_type,
             detector=arguments.detector,
             multi_gpu=arguments.multi_gpu,
-            manual_fix=arguments.manual_fix)
+            manual_fix=arguments.manual_fix,
+            manual_window_size=arguments.manual_window_size)
         
     extract_parser = subparsers.add_parser( "extract", help="Extract the faces from a pictures.")
     extract_parser.add_argument('--input-dir', required=True, action=fixPathAction, dest="input_dir", help="Input directory. A directory containing the files you wish to process.")
     extract_parser.add_argument('--output-dir', required=True, action=fixPathAction, dest="output_dir", help="Output directory. This is where the extracted files will be stored.")
     extract_parser.add_argument('--debug', action="store_true", dest="debug", default=False, help="Writes debug images to [output_dir]_debug\ directory.")    
     extract_parser.add_argument('--face-type', dest="face_type", choices=['full_face', 'avatar'], default='full_face', help="Default full-face. 'avatar' for model avatar")    
-    extract_parser.add_argument('--detector', dest="detector", choices=['dlib','mt','manual'], default='dlib', help="Type of detector. Default 'dlib'. 'mt' (MTCNNv1) - faster, better, almost no jitter, perfect for gathering thousands faces for src-set. It is also good for dst-set, but can generate false faces in frames where main face not recognized! In this case for dst-set use either 'dlib' with '--manual-mode misses' or 'manual' detector. Manual detector suitable only for dst-set.")
+    extract_parser.add_argument('--detector', dest="detector", choices=['dlib','mt','manual'], default='dlib', help="Type of detector. Default 'dlib'. 'mt' (MTCNNv1) - faster, better, almost no jitter, perfect for gathering thousands faces for src-set. It is also good for dst-set, but can generate false faces in frames where main face not recognized! In this case for dst-set use either 'dlib' with '--manual-fix' or '--detector manual'. Manual detector suitable only for dst-set.")
     extract_parser.add_argument('--multi-gpu', action="store_true", dest="multi_gpu", default=False, help="Enables multi GPU.")
     extract_parser.add_argument('--manual-fix', action="store_true", dest="manual_fix", default=False, help="Enables manual extract only frames where faces were not recognized.")
+    extract_parser.add_argument('--manual-window-size', type=int, dest="manual_window_size", default=0, help="Manual fix window size. Example: 1368. Default: frame size.") 
+    
     extract_parser.set_defaults (func=process_extract)
     
     def process_sort(arguments):        
