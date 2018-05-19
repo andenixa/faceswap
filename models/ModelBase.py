@@ -53,7 +53,7 @@ class ModelBase(object):
         self.batch_size = 1
         self.write_preview_history = write_preview_history
         self.debug = debug
-        self.supress_std_once = (os.environ['TF_SUPPRESS_STD'] == '1')
+        self.supress_std_once = ('TF_SUPPRESS_STD' in os.environ.keys() and os.environ['TF_SUPPRESS_STD'] == '1')
         
         if self.model_data_path.exists():            
             model_data = pickle.loads ( self.model_data_path.read_bytes() )            
