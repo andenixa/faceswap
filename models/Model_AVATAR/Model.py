@@ -61,8 +61,8 @@ class Model(ModelBase):
             from models import TrainingDataGenerator
             f = TrainingDataGenerator.SampleTypeFlags 
             self.set_training_data_generators ([            
-                    TrainingDataGenerator(self, TrainingDataType.SRC,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.TARGET | f.AVATAR_FACE | f.MODE_BGR | f.SIZE_256, f.TARGET_UNTRANSFORMED | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.TARGET_UNTRANSFORMED | f.HALF_FACE | f.MODE_GGG | f.SIZE_256] ),
-                    TrainingDataGenerator(self, TrainingDataType.DST,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.TARGET | f.AVATAR_FACE | f.MODE_BGR | f.SIZE_256, f.TARGET_UNTRANSFORMED | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.TARGET_UNTRANSFORMED | f.HALF_FACE | f.MODE_GGG | f.SIZE_256] ),
+                    TrainingDataGenerator(self, TrainingDataType.SRC,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.TRANSFORMED | f.AVATAR_FACE | f.MODE_BGR | f.SIZE_256, f.SOURCE | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.SOURCE | f.HALF_FACE | f.MODE_GGG | f.SIZE_256] ),
+                    TrainingDataGenerator(self, TrainingDataType.DST,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.TRANSFORMED | f.AVATAR_FACE | f.MODE_BGR | f.SIZE_256, f.SOURCE | f.HALF_FACE | f.MODE_G | f.SIZE_64, f.SOURCE | f.HALF_FACE | f.MODE_GGG | f.SIZE_256] ),
                 ])
     #override
     def onSave(self):        

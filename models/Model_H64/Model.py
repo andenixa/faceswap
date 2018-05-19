@@ -25,7 +25,7 @@ class Model(ModelBase):
         self.batch_size = batch_size
         if self.batch_size == 0:
             if self.gpu_total_vram_gb == 2:
-                self.batch_size = 1
+                self.batch_size = 2
             elif self.gpu_total_vram_gb == 3:
                 self.batch_size = 4
             elif self.gpu_total_vram_gb == 4:
@@ -55,16 +55,17 @@ class Model(ModelBase):
         if self.is_training_mode:
             self.autoencoder_src, self.autoencoder_dst = self.to_multi_gpu_model_if_possible ( [self.autoencoder_src, self.autoencoder_dst] )
         
-        optimizer = self.keras.optimizers.Adam(lr=5e-5, beta_1=0.5, beta_2=0.999)
-        self.autoencoder_src.compile(optimizer=optimizer, loss=[DSSIMMaskLossClass(self.tf)(mask_layer), 'mae'])
-        self.autoencoder_dst.compile(optimizer=optimizer, loss=[DSSIMMaskLossClass(self.tf)(mask_layer), 'mae'])
+        optimizer = self.keras.optimizers.Adam(lr=5e-5, beta_1=0.5, beta_2=0.999)        
+        dssimloss = DSSIMMaskLossClass(self.tf)(mask_layer)
+        self.autoencoder_src.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
+        self.autoencoder_dst.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
   
         if self.is_training_mode:
             from models import TrainingDataGenerator
             f = TrainingDataGenerator.SampleTypeFlags 
             self.set_training_data_generators ([            
-                    TrainingDataGenerator(self, TrainingDataType.SRC,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TARGET | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TARGET | f.HALF_FACE | f.MODE_M | f.SIZE_64], random_flip=True ),
-                    TrainingDataGenerator(self, TrainingDataType.DST,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TARGET | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TARGET | f.HALF_FACE | f.MODE_M | f.SIZE_64] )
+                    TrainingDataGenerator(self, TrainingDataType.SRC,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL | f.SIZE_64], random_flip=True ),
+                    TrainingDataGenerator(self, TrainingDataType.DST,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL | f.SIZE_64], random_flip=True )
                 ])
                 
     #override

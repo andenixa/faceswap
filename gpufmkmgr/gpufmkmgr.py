@@ -19,6 +19,7 @@ def import_dlib(device_idx):
 tf_module = None
 tf_session = None
 keras_module = None
+keras_vggface_module = None
 
 def get_tf_session():
     global tf_session
@@ -97,7 +98,28 @@ def finalize_keras():
     keras_module.backend.clear_session()
     keras_module = None
     
+def import_keras_vggface(optional=False):
+    global keras_vggface_module
+    
+    if keras_vggface_module is not None:
+        raise Exception ('Multiple import of keras_vggface_module is not allowed, reorganize your program.')
 
+    try:
+        import keras_vggface
+    except:
+        if optional:
+            print ("Unable to import keras_vggface. It will not be used.")
+        else:
+            raise Exception ("Unable to import keras_vggface.")
+        keras_vggface = None
+        
+    keras_vggface_module = keras_vggface
+    return keras_vggface_module
+    
+def finalize_keras_vggface():
+    global keras_vggface_module
+    keras_vggface_module = None    
+    
 #returns [ (device_idx, device_name), ... ]
 def getDevicesWithAtLeastFreeMemory(freememsize):
     result = []

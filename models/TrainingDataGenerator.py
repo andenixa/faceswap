@@ -13,26 +13,27 @@ generates full face images
 '''   
 class TrainingDataGenerator(TrainingDataGeneratorBase):
     class SampleTypeFlags(IntEnum):
-        WARPED               = 0x00001,
-        TARGET               = 0x00002,
-        TARGET_UNTRANSFORMED = 0x00004,
+        SOURCE               = 0x000001,
+        WARPED               = 0x000002,
+        WARPED_TRANSFORMED   = 0x000004,
+        TRANSFORMED          = 0x000008,
+   
+        HALF_FACE   = 0x000010,
+        FULL_FACE   = 0x000020,
+        HEAD_FACE   = 0x000040,
+        AVATAR_FACE = 0x000080,
         
-        HALF_FACE   = 0x00010,
-        FULL_FACE   = 0x00020,
-        HEAD_FACE   = 0x00040,
-        AVATAR_FACE = 0x00080,
-        
-        MODE_BGR  = 0x00100,  #BGR
-        MODE_G    = 0x00200,  #Grayscale
-        MODE_GGG  = 0x00400,  #3xGrayscale 
-        MODE_M    = 0x00800,  #mask only    
-        MODE_BGRM = 0x01000,  #BGR + mask
-        MODE_GM   = 0x02000,  #Grayscale + mask
-        MODE_GGGM = 0x04000,  #3xGrayscale + mask            
-        
-        SIZE_64   = 0x10000,
-        SIZE_128  = 0x20000,
-        SIZE_256  = 0x40000,
+        MODE_BGR    = 0x000100,  #BGR
+        MODE_G      = 0x000200,  #Grayscale
+        MODE_GGG    = 0x000400,  #3xGrayscale 
+        MODE_M      = 0x000800,  #mask only
+
+        MASK_FULL   = 0x100000,
+        MASK_EYES   = 0x200000,
+
+        SIZE_64     = 0x010000,
+        SIZE_128    = 0x020000,
+        SIZE_256    = 0x040000,
         
     #overrided
     def onInitialize(self, random_flip=False, output_sample_types_flags=[], **kwargs):
@@ -41,30 +42,56 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         
     #overrided
     def onProcessSample(self, sample, debug):
-        s_bgrm = sample.load_bgrm()
+        source = sample.load_bgr()
 
         if debug:
-            LandmarksProcessor.draw_landmarks (s_bgrm, sample.landmarks, (0, 1, 0))
+            LandmarksProcessor.draw_landmarks (source, sample.landmarks, (0, 1, 0))
 
-        warped_bgrm, target_bgrm, target_bgrm_untransformed = TrainingDataGenerator.warp (s_bgrm, sample.landmarks)
+        #warped_bgrm, target_bgrm, target_bgrm_untransformed = TrainingDataGenerator.warp (s_bgrm, sample.landmarks)
 
-        if self.random_flip and np.random.randint(10) < 4:
-            warped_bgrm = warped_bgrm[:,::-1,:]
-            target_bgrm = target_bgrm[:,::-1,:]
-            target_bgrm_untransformed = target_bgrm[:,::-1,:]
+        params = TrainingDataGenerator.gen_params(source, self.random_flip)
 
-        outputs = []
+        warped = None
+        warped_transformed = None
+        transformed = None
         
-        for t in self.output_sample_types_flags:
-            if t & self.SampleTypeFlags.WARPED != 0:
-                source = warped_bgrm
-            elif t & self.SampleTypeFlags.TARGET != 0:
-                source = target_bgrm
-            elif t & self.SampleTypeFlags.TARGET_UNTRANSFORMED != 0:
-                source = target_bgrm_untransformed
-            else:
-                raise ValueError ('expected SampleTypeFlags warped/target type')
+        full_mask = None
+        full_mask_warped = None
+        full_mask_warped_transformed = None
+        full_mask_transformed = None
 
+        images = [[None]*3 for _ in range(4)]
+            
+        outputs = []        
+        for t in self.output_sample_types_flags:
+            if t & self.SampleTypeFlags.SOURCE != 0:
+                img_type = 0
+            elif t & self.SampleTypeFlags.WARPED != 0:
+                img_type = 1
+            elif t & self.SampleTypeFlags.WARPED_TRANSFORMED != 0:
+                img_type = 2
+            elif t & self.SampleTypeFlags.TRANSFORMED != 0:
+                img_type = 3
+            else:
+                raise ValueError ('expected SampleTypeFlags type')
+                
+            mask_type = 0
+            if t & self.SampleTypeFlags.MASK_FULL != 0:
+                mask_type = 1               
+            elif t & self.SampleTypeFlags.MASK_EYES != 0:
+                mask_type = 2
+                    
+            if images[img_type][mask_type] is None:
+                img = source
+                if mask_type == 1:
+                    img = np.concatenate( (img, LandmarksProcessor.get_image_hull_mask (source, sample.landmarks) ), -1 )                    
+                elif mask_type == 2:
+                    pass
+                    
+                images[img_type][mask_type] = TrainingDataGenerator.warp (params, img, (img_type==1 or img_type==2), (img_type==2 or img_type==3), img_type != 0)
+                
+            img = images[img_type][mask_type]
+            
             if t & self.SampleTypeFlags.SIZE_64 != 0:
                 size = 64
             elif t & self.SampleTypeFlags.SIZE_128 != 0:
@@ -88,51 +115,42 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
             if target_face_type > sample.face_type:
                 raise Exception ('sample %s type %s does not match model requirement %s. Consider extract necessary type of faces.' % (sample.filename, sample.face_type, target_face_type) )
 
-            source = cv2.warpAffine( source, LandmarksProcessor.get_transform_mat (sample.landmarks, size, target_face_type), (size,size), flags=cv2.INTER_LANCZOS4 )
+            img = cv2.warpAffine( img, LandmarksProcessor.get_transform_mat (sample.landmarks, size, target_face_type), (size,size), flags=cv2.INTER_LANCZOS4 )
+ 
+            img_bgr  = img[...,0:3]
+            img_mask = img[...,3:4]
  
             if t & self.SampleTypeFlags.MODE_BGR != 0:
-                source = source[...,0:3]
+                img = img
             elif t & self.SampleTypeFlags.MODE_G != 0:
-                source = np.expand_dims(cv2.cvtColor(source[...,0:3], cv2.COLOR_BGR2GRAY),-1)
+                img = np.concatenate ( (np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1),img_mask) , -1 )
             elif t & self.SampleTypeFlags.MODE_GGG != 0:
-                source = np.repeat ( np.expand_dims(cv2.cvtColor(source[...,0:3], cv2.COLOR_BGR2GRAY),-1), (3,), -1)
-            elif t & self.SampleTypeFlags.MODE_BGRM != 0:
-                source = source
-            elif t & self.SampleTypeFlags.MODE_GM != 0:
-                source = np.concatenate( ( np.expand_dims(cv2.cvtColor(source[...,0:3], cv2.COLOR_BGR2GRAY),-1),
-                                           np.expand_dims(source[...,-1],-1)
-                                         )
-                                         , -1
-                                       )
-            elif t & self.SampleTypeFlags.MODE_GGGM != 0:
-                source = np.concatenate( ( np.repeat ( np.expand_dims(cv2.cvtColor(source[...,0:3], cv2.COLOR_BGR2GRAY),-1), (3,), -1),
-                                           np.expand_dims(source[...,-1],-1)
-                                         )
-                                         , -1
-                                       )
+                img = np.concatenate ( ( np.repeat ( np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1), (3,), -1), img_mask), -1)
             elif t & self.SampleTypeFlags.MODE_M != 0:
-                source = np.expand_dims(source[...,-1],-1)
+                if mask_type== 0:
+                    raise ValueError ('no mask mode defined')
+                img = img_mask
             else:
                 raise ValueError ('expected SampleTypeFlags mode')
-                
-            outputs.append ( source )
+     
+            outputs.append ( img )
 
         if debug:
-            result = (s_bgrm,)
+            result = (source,)
 
             for output in outputs:
                 if output.shape[2] < 4:
                     result += (output,)
                 elif output.shape[2] == 4:
-                    result += ( output[...,0:-1]*np.expand_dims(output[...,-1],-1), )
+                    result += (output[...,0:3]*output[...,3:4],)
 
             return result            
         else:
             return outputs
-            
+   
     @staticmethod
-    def warp(image_bgrm, s_landmarks):          
-        h,w,c = image_bgrm.shape
+    def gen_params (source, flip):
+        h,w,c = source.shape
         if (h != w) or (w != 64 and w != 128 and w != 256 and w != 512 and w != 1024):
             raise ValueError ('TrainingDataGenerator accepts only square power of 2 images.')
             
@@ -142,7 +160,6 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         ty = np.random.uniform(-0.05, 0.05)    
      
         #random warp by grid
-        #128 64 32 16
         cell_size = [ w // (2**i) for i in range(1,5) ] [ np.random.randint(4) ]
         cell_count = w // cell_size + 1
         
@@ -157,13 +174,26 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         
         mapx = cv2.resize(mapx, (w+cell_size,)*2 )[half_cell_size:-half_cell_size-1,half_cell_size:-half_cell_size-1].astype(np.float32)
         mapy = cv2.resize(mapy, (w+cell_size,)*2 )[half_cell_size:-half_cell_size-1,half_cell_size:-half_cell_size-1].astype(np.float32)
-        warped_bgrm = cv2.remap(image_bgrm, mapx, mapy, cv2.INTER_LANCZOS4 )
         
-        #random transform                                   
+        #random transform
         random_transform_mat = cv2.getRotationMatrix2D((w // 2, w // 2), rotation, scale)
         random_transform_mat[:, 2] += (tx*w, ty*w)
-
-        warped_bgrm = cv2.warpAffine( warped_bgrm, random_transform_mat, (w, w), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )
-        target_bgrm = cv2.warpAffine( image_bgrm , random_transform_mat, (w, w), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )        
         
-        return warped_bgrm, target_bgrm, image_bgrm
+        params = dict()
+        params['mapx'] = mapx
+        params['mapy'] = mapy
+        params['rmat'] = random_transform_mat
+        params['w'] = w        
+        params['flip'] = flip and np.random.randint(10) < 4
+                
+        return params
+        
+    @staticmethod    
+    def warp (params, img, warp, transform, flip):
+        if warp:
+            img = cv2.remap(img, params['mapx'], params['mapy'], cv2.INTER_LANCZOS4 )
+        if transform:
+            img = cv2.warpAffine( img, params['rmat'], (params['w'], params['w']), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )            
+        if flip and params['flip']:
+            img = img[:,::-1,:]
+        return img

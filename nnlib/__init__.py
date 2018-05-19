@@ -24,7 +24,7 @@ def DSSIMMaskLossClass(tf):
             return err
             
     return DSSIMMaskLoss
-    
+
 def MAEMaskLossClass(tf, keras):
     class MAEMaskLoss(object):
         def __init__(self,mask):

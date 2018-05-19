@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from random import randint
 from facelib import FaceType
-from facelib import LandmarksProcessor
+
 
 class TrainingDataType(IntEnum):
     
@@ -46,12 +46,7 @@ class TrainingDataSample(object):
         if self.mirror:
             img = img[:,::-1].copy()
         return img
-        
-    def load_bgrm(self):
-        img = self.load_bgr()
-        img = np.concatenate( (img, LandmarksProcessor.get_image_hull_mask (img, self.landmarks)) , -1 )        
-        return img
-        
+
     def get_random_nearest_target_sample(self):
         if self.nearest_target_list is None:
             return None

@@ -1,3 +1,4 @@
+import os
 import operator
 from pathlib import Path
 import pickle
@@ -52,7 +53,7 @@ class ModelBase(object):
         self.batch_size = 1
         self.write_preview_history = write_preview_history
         self.debug = debug
-        self.supress_std_once = False#True
+        self.supress_std_once = (os.environ['TF_SUPPRESS_STD'] == '1')
         
         if self.model_data_path.exists():            
             model_data = pickle.loads ( self.model_data_path.read_bytes() )            
@@ -107,10 +108,10 @@ class ModelBase(object):
                     self.multi_gpu = False
             else:
                 self.gpu_idxs = [gpu_idx]
-
-        self.tf = gpufmkmgr.import_tf(self.gpu_idxs,allow_growth=False)
-        self.keras = gpufmkmgr.import_keras()    
         
+        self.tf = gpufmkmgr.import_tf(self.gpu_idxs,allow_growth=False)
+        self.keras = gpufmkmgr.import_keras()
+ 
         self.onInitialize(**in_options)
         
         if self.debug:
@@ -147,10 +148,15 @@ class ModelBase(object):
  
         if self.gpu_total_vram_gb == 2:
             print ("==")
-            print ("== WARNING: You are using 2GB GPU. If training does not start,")
-            print ("== close all programs and try again.")
+            print ("== WARNING: You are using 2GB GPU. Result quality may be significantly decreased.")
+            print ("== If training does not start, close all programs and try again.")
             print ("== Also you can disable Windows Aero Desktop to get extra free VRAM.")
             print ("==")
+            
+        if not self.debug and self.batch_size == 1:
+            print ("== WARNING: You are using batch_size==1. Model will not recognize closed eyes.")
+            print ("==")
+            
         print ("=========================")
   
     #overridable
