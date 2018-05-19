@@ -48,7 +48,7 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
 
         warped_bgrm, target_bgrm, target_bgrm_untransformed = TrainingDataGenerator.warp (s_bgrm, sample.landmarks)
 
-        if self.random_flip and np.random.randint(2) == 1:
+        if self.random_flip and np.random.randint(10) < 4:
             warped_bgrm = warped_bgrm[:,::-1,:]
             target_bgrm = target_bgrm[:,::-1,:]
             target_bgrm_untransformed = target_bgrm[:,::-1,:]
@@ -142,7 +142,8 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         ty = np.random.uniform(-0.05, 0.05)    
      
         #random warp by grid
-        cell_size = 32
+        #128 64 32 16
+        cell_size = [ w // (2**i) for i in range(1,5) ] [ np.random.randint(4) ]
         cell_count = w // cell_size + 1
         
         grid_points = np.linspace( 0, w, cell_count)

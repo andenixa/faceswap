@@ -281,7 +281,7 @@ def main (training_data_src_dir, training_data_dst_dir, model_path, model_name, 
     print ("Running trainer.\r\n")
     
     output_queue = queue.Queue()
-    input_queue = queue.Queue()    
+    input_queue = queue.Queue()
     import threading
     thread = threading.Thread(target=trainerThread, args=(output_queue, input_queue, training_data_src_dir, training_data_dst_dir, model_path, model_name), kwargs=in_options )
     thread.start()

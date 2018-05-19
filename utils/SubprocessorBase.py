@@ -53,6 +53,11 @@ class SubprocessorBase(object):
         return None  
         
     #overridable
+    def onClientGetDataName (self, data):
+        #return string identificator of your data
+        return "undefined"
+        
+    #overridable
     def onHostClientsInitialized(self):
         pass
         
@@ -227,7 +232,8 @@ class SubprocessorBase(object):
                     result = self.onClientProcessData (data)                    
                     cq.put ( {'op': 'success', 'data' : data, 'result' : result} )                    
                 except:
-                    print ( 'Exception while process data: %s' % (traceback.format_exc()) )
+                    
+                    print ( 'Exception while process data [%s]: %s' % (self.onClientGetDataName(data), traceback.format_exc()) )
                     cq.put ( {'op': 'error', 'close': True, 'data' : data } )
             elif obj_op == 'close':
                 break

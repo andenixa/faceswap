@@ -268,6 +268,11 @@ class ExtractSubprocessor(SubprocessorBase):
                     
                 return result       
         return None
+
+        #overridable
+    def onClientGetDataName (self, data):
+        #return string identificator of your data
+        return data[0]
         
     #override
     def onHostResult (self, data, result):
@@ -316,7 +321,7 @@ def main (input_dir, output_dir, debug, detector='mt', multi_gpu=True, manual_fi
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     face_type = FaceType.fromString(face_type)
-    
+
     if not input_path.exists():
         print('Input directory not found. Please ensure it exists.')
         return
@@ -335,7 +340,7 @@ def main (input_dir, output_dir, debug, detector='mt', multi_gpu=True, manual_fi
         else:
             debug_output_path.mkdir(parents=True, exist_ok=True)
 
-    input_path_image_paths = Path_utils.get_image_paths(input_path)
+    input_path_image_paths = Path_utils.get_image_unique_filestem_paths(input_path, verbose=True)
     images_found = len(input_path_image_paths)
     faces_detected = 0
     if images_found != 0:    
