@@ -43,7 +43,8 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
     #overrided
     def onProcessSample(self, sample, debug):
         source = sample.load_bgr()
-
+        h,w,c = source.shape
+        
         if debug:
             LandmarksProcessor.draw_landmarks (source, sample.landmarks, (0, 1, 0))
 
@@ -86,8 +87,11 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
                 if mask_type == 1:
                     img = np.concatenate( (img, LandmarksProcessor.get_image_hull_mask (source, sample.landmarks) ), -1 )                    
                 elif mask_type == 2:
-                    pass
-                    
+                    mask = LandmarksProcessor.get_image_eye_mask (source, sample.landmarks)
+                    mask = np.expand_dims (cv2.blur (mask, ( w // 32, w // 32 ) ), -1)
+                    mask[mask > 0.0] = 1.0
+                    img = np.concatenate( (img, mask ), -1 )               
+
                 images[img_type][mask_type] = TrainingDataGenerator.warp (params, img, (img_type==1 or img_type==2), (img_type==2 or img_type==3), img_type != 0)
                 
             img = images[img_type][mask_type]
@@ -160,7 +164,7 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         ty = np.random.uniform(-0.05, 0.05)    
      
         #random warp by grid
-        cell_size = [ w // (2**i) for i in range(1,5) ] [ np.random.randint(4) ]
+        cell_size = [ w // (2**i) for i in range(1,4) ] [ np.random.randint(3) ]
         cell_count = w // cell_size + 1
         
         grid_points = np.linspace( 0, w, cell_count)

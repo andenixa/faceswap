@@ -32,14 +32,14 @@ class Model(ModelBase):
                 self.batch_size = 8
             elif self.gpu_total_vram_gb == 5:
                 self.batch_size = 16
-            elif self.gpu_total_vram_gb < 12: 
+            elif self.gpu_total_vram_gb < 8: 
                 self.batch_size = 32
             else:    
-                self.batch_size = 64
-                
+                self.batch_size = 48 #best for all models
+
         ae_input_layer = self.keras.layers.Input(shape=(64, 64, 3))
         mask_layer = self.keras.layers.Input(shape=(64, 64, 1)) #same as output
-        
+      
         self.encoder = self.Encoder(ae_input_layer, self.created_vram_gb)
         self.decoder_src = self.Decoder(self.created_vram_gb)
         self.decoder_dst = self.Decoder(self.created_vram_gb)
@@ -56,7 +56,7 @@ class Model(ModelBase):
             self.autoencoder_src, self.autoencoder_dst = self.to_multi_gpu_model_if_possible ( [self.autoencoder_src, self.autoencoder_dst] )
         
         optimizer = self.keras.optimizers.Adam(lr=5e-5, beta_1=0.5, beta_2=0.999)        
-        dssimloss = DSSIMMaskLossClass(self.tf)(mask_layer)
+        dssimloss = DSSIMMaskLossClass(self.tf)([mask_layer])
         self.autoencoder_src.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
         self.autoencoder_dst.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
   
@@ -76,11 +76,11 @@ class Model(ModelBase):
         
     #override
     def onTrainOneEpoch(self, sample):
-        warped_src, target_src, target_src_mask = sample[0]
-        warped_dst, target_dst, target_dst_mask = sample[1]    
+        warped_src, target_src, target_src_full_mask = sample[0]
+        warped_dst, target_dst, target_dst_full_mask = sample[1]    
         
-        loss_src = self.autoencoder_src.train_on_batch( [warped_src, target_src_mask], [target_src, target_src_mask] )
-        loss_dst = self.autoencoder_dst.train_on_batch( [warped_dst, target_dst_mask], [target_dst, target_dst_mask] )
+        loss_src = self.autoencoder_src.train_on_batch( [warped_src, target_src_full_mask], [target_src, target_src_full_mask] )
+        loss_dst = self.autoencoder_dst.train_on_batch( [warped_dst, target_dst_full_mask], [target_dst, target_dst_full_mask] )
 
         return ( ('loss_src', loss_src[0]), ('loss_dst', loss_dst[0]) )
         

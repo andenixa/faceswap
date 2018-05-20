@@ -31,10 +31,10 @@ class Model(ModelBase):
                 self.batch_size = 8
             elif self.gpu_total_vram_gb <= 6:
                 self.batch_size = 4
-            elif self.gpu_total_vram_gb < 12: 
+            elif self.gpu_total_vram_gb < 8: 
                 self.batch_size = 32
             else:    
-                self.batch_size = 64
+                self.batch_size = 48 #best for all models
                 
         ae_input_layer = self.keras.layers.Input(shape=(64, 64, 1))
  

@@ -59,7 +59,7 @@ class Model(ModelBase):
             self.autoencoder_src, self.autoencoder_dst = self.to_multi_gpu_model_if_possible ( [self.autoencoder_src, self.autoencoder_dst] )
                 
         optimizer = self.keras.optimizers.Adam(lr=5e-5, beta_1=0.5, beta_2=0.999)
-        dssimloss = DSSIMMaskLossClass(self.tf)(mask_layer)
+        dssimloss = DSSIMMaskLossClass(self.tf)([mask_layer])
         self.autoencoder_src.compile(optimizer=optimizer, loss=[dssimloss, 'mse'] )
         self.autoencoder_dst.compile(optimizer=optimizer, loss=[dssimloss, 'mse'] )
   

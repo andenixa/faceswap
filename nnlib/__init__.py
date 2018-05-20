@@ -16,12 +16,19 @@ def tf_image_histogram (tf, input):
 
 def DSSIMMaskLossClass(tf):
     class DSSIMMaskLoss(object):
-        def __init__(self, mask):
-            self.mask = mask
+        def __init__(self, mask_list):
+            self.mask_list = mask_list
             
         def __call__(self,y_true, y_pred):
-            err = (1.0 - tf.image.ssim (y_true*self.mask, y_pred*self.mask, 1.0)) / 2.0
-            return err
+            total_loss = None
+            for mask in self.mask_list:
+                loss = (1.0 - tf.image.ssim (y_true*mask, y_pred*mask, 1.0)) / 2.0
+                if total_loss is None:
+                    total_loss = loss
+                else:
+                    total_loss += loss
+                    
+            return total_loss
             
     return DSSIMMaskLoss
 

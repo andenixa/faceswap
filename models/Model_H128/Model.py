@@ -35,7 +35,7 @@ class Model(ModelBase):
             elif self.gpu_total_vram_gb < 12: 
                 self.batch_size = 16
             else:    
-                self.batch_size = 32
+                self.batch_size = 48 #best for all models
                 
         ae_input_layer = self.keras.layers.Input(shape=(128, 128, 3))
         mask_layer = self.keras.layers.Input(shape=(128, 128, 1)) #same as output
@@ -56,7 +56,7 @@ class Model(ModelBase):
             self.autoencoder_src, self.autoencoder_dst = self.to_multi_gpu_model_if_possible ( [self.autoencoder_src, self.autoencoder_dst] )
         
         optimizer = self.keras.optimizers.Adam(lr=5e-5, beta_1=0.5, beta_2=0.999)
-        dssimloss = DSSIMMaskLossClass(self.tf)(mask_layer)
+        dssimloss = DSSIMMaskLossClass(self.tf)([mask_layer])
         self.autoencoder_src.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
         self.autoencoder_dst.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
   
@@ -90,7 +90,6 @@ class Model(ModelBase):
         test_A_m = sample[0][2][0:4] #first 4 samples
         test_B   = sample[1][1][0:4]
         test_B_m = sample[1][2][0:4]
-        
         AA, mAA = self.autoencoder_src.predict([test_A, test_A_m])                                       
         AB, mAB = self.autoencoder_src.predict([test_B, test_B_m])
         BB, mBB = self.autoencoder_dst.predict([test_B, test_B_m])

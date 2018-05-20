@@ -85,6 +85,17 @@ def get_image_hull_mask (image, image_landmarks):
     
     return hull_mask
     
+def get_image_eye_mask (image, image_landmarks):        
+    if len(image_landmarks) != 68:
+        raise Exception('get_image_eye_mask work only with 68 landmarks')
+        
+    hull_mask = np.zeros(image.shape[0:2]+(1,),dtype=np.float32)
+
+    cv2.fillConvexPoly( hull_mask, cv2.convexHull( image_landmarks[36:42]), (1,) )
+    cv2.fillConvexPoly( hull_mask, cv2.convexHull( image_landmarks[42:48]), (1,) )
+    
+    return hull_mask
+    
 def get_image_hull_mask_3D (image, image_landmarks):    
     result = get_image_hull_mask(image, image_landmarks)
     
