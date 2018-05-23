@@ -15,33 +15,19 @@ def get_image_paths(dir_path):
     return result
 
 def get_image_unique_filestem_paths(dir_path, verbose=False):
-    result = get_image_paths(dir_path)
-    
-    #result_len = len(result)
-    #result_dup = result[:]
-    res = {}
+    result = get_image_paths(dir_path)   
+    result_dup = set()    
     
     for fn in result:
-        bn, _ = os.path.splitext(fn)
-        if bn in res:
+        bn = Path(fn).stem 
+        if bn in result_dup:
             if verbose:
-                print ("Duplicate filenames are not allowed, skipping: %s" % (os.path.basename(fn)))
+                result.remove(fn)
+                print ("Duplicate filenames are not allowed, skipping: %s" % os.path.basename(fn))
             continue
+        result_dup.add(bn)
             
-        res[bn] = fn
-        
-    return list(res.values())
-    
-#    for i in range(0, result_len):
-#        i_path = Path(result_dup[i])
-#        print(i_path, i_path.stem)
-#        for j in range(i+1, result_len):
-#            j_path = Path(result_dup[j])            
-#            if ( i_path.stem == j_path.stem ):                
-#                if verbose:
-#                    print ("Duplicate filenames are not allowed, skipping: %s" % (j_path.name) )                    
-#                result.remove (result_dup[j])                
-#    return result
+    return result
     
 def get_all_dir_names_startswith (dir_path, startswith):
     dir_path = Path (dir_path)
