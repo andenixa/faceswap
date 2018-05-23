@@ -58,16 +58,16 @@ class TrainingDataGeneratorBase(object):
         if data_len == 0:
             raise ValueError('No training data provided.')
             
-        if (self.trainingdatatype == TrainingDataType.SRC or self.trainingdatatype == TrainingDataType.SRC_WITH_NEAREST) and data_len > 1500:
+        if (self.trainingdatatype == TrainingDataType.FACE_SRC or self.trainingdatatype == TrainingDataType.FACE_SRC_WITH_NEAREST) and data_len > 1500:
             print ("Warning, your src faceset contains more than 1500 faces. This can make worse result. Reduce it by sort --by hist-dissim.")
         
-        if self.trainingdatatype >= TrainingDataType.SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
+        if self.trainingdatatype >= TrainingDataType.FACE_SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
             if all ( [ x == None for x in self.data] ):
                 raise ValueError('Not enough training data. Gather more faces!')
              
-        if self.trainingdatatype >= TrainingDataType.SRC and self.trainingdatatype <= TrainingDataType.DST_ONLY_1:
+        if self.trainingdatatype >= TrainingDataType.RAW_SRC and self.trainingdatatype <= TrainingDataType.FACE_DST_ONLY_1:
             shuffle_idxs = []          
-        elif self.trainingdatatype >= TrainingDataType.SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
+        elif self.trainingdatatype >= TrainingDataType.FACE_SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
             shuffle_idxs = []            
             shuffle_idxs_2D = [[]]*data_len
             
@@ -78,13 +78,13 @@ class TrainingDataGeneratorBase(object):
                 while True:
                     sample = None
                                 
-                    if self.trainingdatatype >= TrainingDataType.SRC and self.trainingdatatype <= TrainingDataType.DST_ONLY_1:
+                    if self.trainingdatatype >= TrainingDataType.RAW_SRC and self.trainingdatatype <= TrainingDataType.FACE_DST_ONLY_1:
                         if len(shuffle_idxs) == 0:
                             shuffle_idxs = [ i for i in range(0, data_len) ]
                             random.shuffle(shuffle_idxs)                            
                         idx = shuffle_idxs.pop()
                         sample = self.data[ idx ]
-                    elif self.trainingdatatype >= TrainingDataType.SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
+                    elif self.trainingdatatype >= TrainingDataType.FACE_SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
                         if len(shuffle_idxs) == 0:
                             shuffle_idxs = [ i for i in range(0, data_len) ]
                             random.shuffle(shuffle_idxs)
@@ -124,3 +124,4 @@ class TrainingDataGeneratorBase(object):
     def set_dict_state(self, state):
         pass
 
+    

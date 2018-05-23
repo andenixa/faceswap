@@ -6,7 +6,8 @@ from .ConverterBase import ConverterBase
 from .ConverterMasked import ConverterMasked
 from .ConverterAvatar import ConverterAvatar
 from .TrainingDataGeneratorBase import TrainingDataGeneratorBase
-from .TrainingDataGenerator import TrainingDataGenerator
+from .FaceTrainingDataGenerator import FaceTrainingDataGenerator
+from .ImageTrainingDataGenerator import ImageTrainingDataGenerator
 
 def import_model(name):
     module = __import__('Model_'+name, globals(), locals(), [], 1)

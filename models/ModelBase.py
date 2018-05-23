@@ -154,10 +154,6 @@ class ModelBase(object):
             print ("== Also you can disable Windows Aero Desktop to get extra free VRAM.")
             print ("==")
             
-        if not self.debug and self.batch_size == 1:
-            print ("== WARNING: You are using batch_size==1. Model will not recognize closed eyes.")
-            print ("==")
-            
         print ("=========================")
   
     #overridable
@@ -325,54 +321,64 @@ class ModelBase(object):
         if not isinstance(dtype, TrainingDataType):
             raise Exception('get_training_data dtype is not TrainingDataType')
     
-        if dtype == TrainingDataType.SRC:
+        
+        if dtype == TrainingDataType.RAW_SRC:
+            if self.training_datas[dtype] is None:  
+                self.training_datas[dtype] = [ TrainingDataSample(filename=filename) for filename in tqdm( Path_utils.get_image_paths(self.training_data_src_path), desc="Loading" ) ]
+            return self.training_datas[dtype]
+            
+        elif dtype == TrainingDataType.RAW_DST:
+            if self.training_datas[dtype] is None:  
+                self.training_datas[dtype] = [ TrainingDataSample(filename=filename) for filename in tqdm( Path_utils.get_image_paths(self.training_data_dst_path), desc="Loading" ) ]
+            return self.training_datas[dtype]
+            
+        elif dtype == TrainingDataType.FACE_SRC:
             if self.training_datas[dtype] is None:  
                 self.training_datas[dtype] = X_LOAD( [ TrainingDataSample(filename=filename) for filename in Path_utils.get_image_paths(self.training_data_src_path) ] )
             return self.training_datas[dtype]
             
-        elif dtype == TrainingDataType.DST:
+        elif dtype == TrainingDataType.FACE_DST:
             if self.training_datas[dtype] is None:
                 self.training_datas[dtype] = X_LOAD( [ TrainingDataSample(filename=filename) for filename in Path_utils.get_image_paths(self.training_data_dst_path) ] )
             return self.training_datas[dtype]
             
-        elif dtype == TrainingDataType.SRC_WITH_NEAREST:
+        elif dtype == TrainingDataType.FACE_SRC_WITH_NEAREST:
             if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_WITH_NEAREST_Y( self.get_training_data(TrainingDataType.SRC), self.get_training_data(TrainingDataType.DST) )
+                self.training_datas[dtype] = X_WITH_NEAREST_Y( self.get_training_data(TrainingDataType.FACE_SRC), self.get_training_data(TrainingDataType.FACE_DST) )
             return self.training_datas[dtype]
             
-        elif dtype == TrainingDataType.SRC_ONLY_10_NEAREST_TO_DST_ONLY_1:
+        elif dtype == TrainingDataType.FACE_SRC_ONLY_10_NEAREST_TO_DST_ONLY_1:
             if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_ONLY_n_NEAREST_TO_Y_ONLY_1( self.get_training_data(TrainingDataType.SRC), 10, self.get_training_data(TrainingDataType.DST_ONLY_1) )
+                self.training_datas[dtype] = X_ONLY_n_NEAREST_TO_Y_ONLY_1( self.get_training_data(TrainingDataType.FACE_SRC), 10, self.get_training_data(TrainingDataType.FACE_DST_ONLY_1) )
             return self.training_datas[dtype]
         
-        elif dtype == TrainingDataType.DST_ONLY_1:
+        elif dtype == TrainingDataType.FACE_DST_ONLY_1:
             if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_ONLY_1( self.get_training_data(TrainingDataType.DST)  )
+                self.training_datas[dtype] = X_ONLY_1( self.get_training_data(TrainingDataType.FACE_DST)  )
             return self.training_datas[dtype]
           
-        elif dtype == TrainingDataType.SRC_YAW_SORTED:
+        elif dtype == TrainingDataType.FACE_SRC_YAW_SORTED:
             if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_YAW_SORTED( self.get_training_data(TrainingDataType.SRC) )
+                self.training_datas[dtype] = X_YAW_SORTED( self.get_training_data(TrainingDataType.FACE_SRC) )
             return self.training_datas[dtype]
 
-        elif dtype == TrainingDataType.DST_YAW_SORTED:
+        elif dtype == TrainingDataType.FACE_DST_YAW_SORTED:
             if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_YAW_SORTED( self.get_training_data(TrainingDataType.DST))
+                self.training_datas[dtype] = X_YAW_SORTED( self.get_training_data(TrainingDataType.FACE_DST))
             return self.training_datas[dtype]
           
-        elif dtype == TrainingDataType.SRC_YAW_SORTED_AS_DST:            
+        elif dtype == TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST:            
             if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_YAW_AS_Y_SORTED( self.get_training_data(TrainingDataType.SRC_YAW_SORTED), self.get_training_data(TrainingDataType.DST_YAW_SORTED) )
+                self.training_datas[dtype] = X_YAW_AS_Y_SORTED( self.get_training_data(TrainingDataType.FACE_SRC_YAW_SORTED), self.get_training_data(TrainingDataType.FACE_DST_YAW_SORTED) )
             return self.training_datas[dtype]
          
-        elif dtype == TrainingDataType.SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
+        elif dtype == TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
             if self.training_datas[dtype] is None:     
-                self.training_datas[dtype] = calc_X_YAW_AS_Y_SORTED_WITH_NEAREST_Y ( self.get_training_data(TrainingDataType.SRC_YAW_SORTED_AS_DST), self.get_training_data(TrainingDataType.DST) )             
+                self.training_datas[dtype] = calc_X_YAW_AS_Y_SORTED_WITH_NEAREST_Y ( self.get_training_data(TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST), self.get_training_data(TrainingDataType.FACE_DST) )             
                 return self.training_datas[dtype]
                 
         return None
-
-
+    
 def X_LOAD ( RAWS ):
     sample_list = []
     

@@ -6,18 +6,19 @@ from facelib import FaceType
 
 
 class TrainingDataType(IntEnum):
+    RAW_SRC = 0 #raw image
+    RAW_DST = 1 #
+    FACE_SRC = 2 #raw aligned face image unsorted
+    FACE_DST = 3    
+    FACE_SRC_WITH_NEAREST = 4 # as FACE_SRC but samples can return get_random_nearest_target_sample()
+    FACE_SRC_ONLY_10_NEAREST_TO_DST_ONLY_1 = 5 #currently unused, idea to get only 10 nearest samples to target one face for PHOTO256 model
+    FACE_DST_ONLY_1 = 6  #currently unused, idea to get only 10 nearest samples to target one face for PHOTO256 model
+    FACE_SRC_YAW_SORTED = 7 # sorted by yaw
+    FACE_DST_YAW_SORTED = 8 # sorted by yaw
+    FACE_SRC_YAW_SORTED_AS_DST = 9 #sorted by yaw but included only yaws which exist in DST_YAW_SORTED also automatic mirrored
+    FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST = 10 #same as SRC_YAW_SORTED_AS_DST but samples can return get_random_nearest_target_sample()
     
-    SRC = 0 # raw unsorted
-    DST = 1    
-    SRC_WITH_NEAREST = 2 # as raw unsorted but samples can return get_random_nearest_target_sample()
-    SRC_ONLY_10_NEAREST_TO_DST_ONLY_1 = 3 #currently unused, idea to get only 10 nearest samples to target one face for PHOTO256 model
-    DST_ONLY_1 = 4  #currently unused, idea to get only 10 nearest samples to target one face for PHOTO256 model
-    SRC_YAW_SORTED = 5 # sorted by yaw
-    DST_YAW_SORTED = 6 # sorted by yaw
-    SRC_YAW_SORTED_AS_DST = 7 #sorted by yaw but included only yaws which exist in DST_YAW_SORTED also automatic mirrored
-    SRC_YAW_SORTED_AS_DST_WITH_NEAREST = 8 #same as SRC_YAW_SORTED_AS_DST but samples can return get_random_nearest_target_sample()
-    
-    QTY = 9
+    QTY = 11
     
     
 class TrainingDataSample(object):
@@ -26,11 +27,11 @@ class TrainingDataSample(object):
         self.filename = filename
         self.face_type = face_type
         self.shape = shape
-        self.landmarks = np.array(landmarks)
+        self.landmarks = np.array(landmarks) if landmarks is not None else None
         self.yaw = yaw
         self.mirror = mirror
         self.nearest_target_list = nearest_target_list
-        
+    
     def copy_and_set(self, filename=None, face_type=None, shape=None, landmarks=None, yaw=None, mirror=None, nearest_target_list=None):
         return TrainingDataSample( 
             filename=filename if filename is not None else self.filename, 
