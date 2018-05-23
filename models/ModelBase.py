@@ -185,19 +185,12 @@ class ModelBase(object):
         #return [ ('preview_name',preview_rgb), ... ]        
         return []
 
-    #overridable   
+    #overridable if you want model name differs from folder name
     def get_model_name(self):                    
-        try:
-            return self._model_name
-        except AttributeError:
-            import inspect
-            res = inspect.getmodule(self)
-            self._model_name = os.path.split(res.__file__)[0].rsplit("_", 1)[1]        
-        return self._model_name         
-    
-        #also used as prefix for model files
-        #return "ModelBase"
-        
+        import inspect
+        res = inspect.getmodule(self)
+        return os.path.split(res.__file__)[0].rsplit("_", 1)[1]            
+       
     #overridable
     def get_converter(self, **in_options):
         #return existing or your own converter which derived from base        

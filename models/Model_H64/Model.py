@@ -14,10 +14,6 @@ class Model(ModelBase):
     decoder_dstH5 = 'decoder_dst.h5'
 
     #override
-    def get_model_name(self):
-        return "H64"
- 
-    #override
     def onInitialize(self, batch_size=-1, **in_options):
         if self.gpu_total_vram_gb < 2:
             raise Exception ('Sorry, this model works only on 2GB+ GPU')

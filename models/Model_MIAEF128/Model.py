@@ -20,10 +20,6 @@ class Model(ModelBase):
     inter_AH5 = 'inter_A.h5'
 
     #override
-    def get_model_name(self):
-        return "MIAEF128"
- 
-    #override
     def onInitialize(self, batch_size=-1, **in_options):
         if self.gpu_total_vram_gb < 5:
             raise Exception ('Sorry, this model works only on 5GB+ GPU')
