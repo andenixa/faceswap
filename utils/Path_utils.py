@@ -18,7 +18,7 @@ def get_image_unique_filestem_paths(dir_path, verbose=False):
     result = get_image_paths(dir_path)   
     result_dup = set()    
     
-    for fn in result:
+    for fn in result[:]:
         bn = Path(fn).stem         
         if bn in result_dup:            
             result.remove(fn)
