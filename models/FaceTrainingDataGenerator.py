@@ -15,19 +15,19 @@ class FaceTrainingDataGenerator(TrainingDataGeneratorBase):
         WARPED_TRANSFORMED   = 0x000004,
         TRANSFORMED          = 0x000008,
    
-        HALF_FACE   = 0x000010,
-        FULL_FACE   = 0x000020,
-        HEAD_FACE   = 0x000040,
-        AVATAR_FACE = 0x000080,
+        HALF_FACE            = 0x000010,
+        FULL_FACE            = 0x000020,
+        HEAD_FACE            = 0x000040,
+        AVATAR_FACE          = 0x000080,
         
-        MODE_BGR         = 0x000100,  #BGR
-        MODE_G           = 0x000200,  #Grayscale
-        MODE_GGG         = 0x000400,  #3xGrayscale 
-        MODE_M           = 0x000800,  #mask only
-        MODE_BGR_SHUFFLE = 0x001000,  #BGR shuffle
+        MODE_BGR             = 0x000100,  #BGR
+        MODE_G               = 0x000200,  #Grayscale
+        MODE_GGG             = 0x000400,  #3xGrayscale 
+        MODE_M               = 0x000800,  #mask only
+        MODE_BGR_SHUFFLE     = 0x001000,  #BGR shuffle
 
-        MASK_FULL   = 0x100000,
-        MASK_EYES   = 0x200000,
+        MASK_FULL            = 0x100000,
+        MASK_EYES            = 0x200000,
         
     #overrided
     def onInitialize(self, random_flip=False, normalize_tanh=False, output_sample_types=[], **kwargs):

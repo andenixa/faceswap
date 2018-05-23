@@ -17,8 +17,7 @@ class ImageTrainingDataGenerator(TrainingDataGeneratorBase):
 
         MODE_BGR         = 0x000100,  #BGR
         MODE_G           = 0x000200,  #Grayscale
-        MODE_GGG         = 0x000400,  #3xGrayscale 
-        MODE_M           = 0x000800,  #mask only
+        MODE_GGG         = 0x000400,  #3xGrayscale
         MODE_BGR_SHUFFLE = 0x001000,  #BGR shuffle
         
     #overrided
@@ -27,7 +26,7 @@ class ImageTrainingDataGenerator(TrainingDataGeneratorBase):
         self.normalize_tanh = normalize_tanh
         self.output_sample_types = output_sample_types
         
-        allowed_types = [TrainingDataType.RAW_SRC, TrainingDataType.RAW_DST]
+        allowed_types = [TrainingDataType.IMAGE_SRC, TrainingDataType.IMAGE_DST]
         if self.trainingdatatype not in allowed_types:
             raise Exception ('unsupported %s for ImageTrainingDataGenerator. Allowed types: %s' % (self.trainingdatatype, allowed_types) )
             
@@ -73,10 +72,6 @@ class ImageTrainingDataGenerator(TrainingDataGeneratorBase):
                 img = np.concatenate ( (np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1),img_mask) , -1 )
             elif t & self.SampleTypeFlags.MODE_GGG != 0:
                 img = np.concatenate ( ( np.repeat ( np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1), (3,), -1), img_mask), -1)
-            elif t & self.SampleTypeFlags.MODE_M != 0:
-                if mask_type== 0:
-                    raise ValueError ('no mask mode defined')
-                img = img_mask
             else:
                 raise ValueError ('expected SampleTypeFlags mode')
      

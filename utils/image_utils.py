@@ -1,4 +1,5 @@
 import sys
+from utils import random_utils
 import numpy as np
 import cv2
 import localization
@@ -213,3 +214,51 @@ def hsva2bgra (img):
 
 def hsva2bgra_list (imgs):
     return [ hsva2bgra(img) for img in imgs ]
+    
+def gen_warp_params (source, flip):
+    h,w,c = source.shape
+    if (h != w) or (w != 64 and w != 128 and w != 256 and w != 512 and w != 1024):
+        raise ValueError ('TrainingDataGenerator accepts only square power of 2 images.')
+        
+    rotation = np.random.uniform(-10, 10)
+    scale = np.random.uniform(1 - 0.05, 1 + 0.05)
+    tx = np.random.uniform(-0.05, 0.05)
+    ty = np.random.uniform(-0.05, 0.05)    
+ 
+    #random warp by grid
+    cell_size = [ w // (2**i) for i in range(1,4) ] [ np.random.randint(3) ]
+    cell_count = w // cell_size + 1
+    
+    grid_points = np.linspace( 0, w, cell_count)
+    mapx = np.broadcast_to(grid_points, (cell_count, cell_count)).copy()
+    mapy = mapx.T
+    
+    mapx[1:-1,1:-1] = mapx[1:-1,1:-1] + random_utils.random_normal( size=(cell_count-2, cell_count-2) )*(cell_size*0.24)
+    mapy[1:-1,1:-1] = mapy[1:-1,1:-1] + random_utils.random_normal( size=(cell_count-2, cell_count-2) )*(cell_size*0.24)
+
+    half_cell_size = cell_size // 2
+    
+    mapx = cv2.resize(mapx, (w+cell_size,)*2 )[half_cell_size:-half_cell_size-1,half_cell_size:-half_cell_size-1].astype(np.float32)
+    mapy = cv2.resize(mapy, (w+cell_size,)*2 )[half_cell_size:-half_cell_size-1,half_cell_size:-half_cell_size-1].astype(np.float32)
+    
+    #random transform
+    random_transform_mat = cv2.getRotationMatrix2D((w // 2, w // 2), rotation, scale)
+    random_transform_mat[:, 2] += (tx*w, ty*w)
+    
+    params = dict()
+    params['mapx'] = mapx
+    params['mapy'] = mapy
+    params['rmat'] = random_transform_mat
+    params['w'] = w        
+    params['flip'] = flip and np.random.randint(10) < 4
+            
+    return params
+    
+def warp_by_params (params, img, warp, transform, flip):
+    if warp:
+        img = cv2.remap(img, params['mapx'], params['mapy'], cv2.INTER_LANCZOS4 )
+    if transform:
+        img = cv2.warpAffine( img, params['rmat'], (params['w'], params['w']), borderMode=cv2.BORDER_CONSTANT, flags=cv2.INTER_LANCZOS4 )            
+    if flip and params['flip']:
+        img = img[:,::-1,:]
+    return img

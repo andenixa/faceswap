@@ -65,7 +65,7 @@ class TrainingDataGeneratorBase(object):
             if all ( [ x == None for x in self.data] ):
                 raise ValueError('Not enough training data. Gather more faces!')
              
-        if self.trainingdatatype >= TrainingDataType.RAW_SRC and self.trainingdatatype <= TrainingDataType.FACE_DST_ONLY_1:
+        if self.trainingdatatype >= TrainingDataType.IMAGE_SRC and self.trainingdatatype <= TrainingDataType.FACE_DST_ONLY_1:
             shuffle_idxs = []          
         elif self.trainingdatatype >= TrainingDataType.FACE_SRC_YAW_SORTED and self.trainingdatatype <= TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
             shuffle_idxs = []            
@@ -78,7 +78,7 @@ class TrainingDataGeneratorBase(object):
                 while True:
                     sample = None
                                 
-                    if self.trainingdatatype >= TrainingDataType.RAW_SRC and self.trainingdatatype <= TrainingDataType.FACE_DST_ONLY_1:
+                    if self.trainingdatatype >= TrainingDataType.IMAGE_SRC and self.trainingdatatype <= TrainingDataType.FACE_DST_ONLY_1:
                         if len(shuffle_idxs) == 0:
                             shuffle_idxs = [ i for i in range(0, data_len) ]
                             random.shuffle(shuffle_idxs)                            

@@ -322,12 +322,12 @@ class ModelBase(object):
             raise Exception('get_training_data dtype is not TrainingDataType')
     
         
-        if dtype == TrainingDataType.RAW_SRC:
+        if dtype == TrainingDataType.IMAGE_SRC:
             if self.training_datas[dtype] is None:  
                 self.training_datas[dtype] = [ TrainingDataSample(filename=filename) for filename in tqdm( Path_utils.get_image_paths(self.training_data_src_path), desc="Loading" ) ]
             return self.training_datas[dtype]
             
-        elif dtype == TrainingDataType.RAW_DST:
+        elif dtype == TrainingDataType.IMAGE_DST:
             if self.training_datas[dtype] is None:  
                 self.training_datas[dtype] = [ TrainingDataSample(filename=filename) for filename in tqdm( Path_utils.get_image_paths(self.training_data_dst_path), desc="Loading" ) ]
             return self.training_datas[dtype]
