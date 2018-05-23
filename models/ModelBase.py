@@ -193,9 +193,10 @@ class ModelBase(object):
         try:
             return self._model_name
         except AttributeError:
-            ## this will effectively give you your model name all the time
-            self._model_name = os.path.split(__file__)[0].rsplit("_", 1)[1]
-        return self._model_name             
+            import inspect
+            res = inspect.getmodule(self)
+            self._model_name = os.path.split(res.__file__)[0].rsplit("_", 1)[1]        
+        return self._model_name         
     
         #also used as prefix for model files
         #return "ModelBase"
