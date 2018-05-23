@@ -7,3 +7,4 @@ tensorflow-gpu==1.8.0
 scikit-image
 dlib==19.10.0
 tqdm
+git+https://www.github.com/keras-team/keras-contrib.git

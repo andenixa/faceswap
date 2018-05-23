@@ -13,7 +13,25 @@ def tf_image_histogram (tf, input):
         x -= y*v
 
     return tf.stack ( output[::-1] )
+    
+def tf_dssim(tf, t1, t2):
+    return (1.0 - tf.image.ssim (t1, t2, 1.0)) / 2.0
 
+def tf_ssim(tf, t1, t2):
+    return tf.image.ssim (t1, t2, 1.0)
+    
+def MSEHistLossClass(tf, keras):
+    class HistLoss(object):
+        def __init__(self):
+            pass
+            
+        def __call__(self,y_true, y_pred):
+            K = keras.backend
+            loss = K.mean ( K.abs ( tf_image_histogram(tf, y_true) - tf_image_histogram(tf, y_pred) ) )                    
+            return loss
+            
+    return HistLoss
+    
 def DSSIMMaskLossClass(tf):
     class DSSIMMaskLoss(object):
         def __init__(self, mask_list):
@@ -160,3 +178,19 @@ def res(keras, input_tensor, filters):
     x = keras.layers.Add()([x, input_tensor])
     x = keras.layers.advanced_activations.LeakyReLU(alpha=0.2)(x)
     return x
+    
+def resize_like(tf, keras, ref_tensor, input_tensor):
+    def func(input_tensor, ref_tensor):
+        H, W = ref_tensor.get_shape()[1], ref_tensor.get_shape()[2]
+        return tf.image.resize_bilinear(input_tensor, [H.value, W.value])
+
+    return keras.layers.Lambda(func, arguments={'ref_tensor':ref_tensor})(input_tensor)
+    
+def total_variation_loss(keras, x):
+    K = keras.backend
+    assert K.ndim(x) == 4    
+    B,H,W,C = K.int_shape(x)
+    a = K.square(x[:, :H - 1, :W - 1, :] - x[:, 1:, :W - 1, :])
+    b = K.square(x[:, :H - 1, :W - 1, :] - x[:, :H - 1, 1:, :])
+    
+    return K.sum(a + b)

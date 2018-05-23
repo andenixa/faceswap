@@ -64,8 +64,8 @@ class Model(ModelBase):
             from models import TrainingDataGenerator
             f = TrainingDataGenerator.SampleTypeFlags 
             self.set_training_data_generators ([            
-                    TrainingDataGenerator(self, TrainingDataType.SRC,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL | f.SIZE_64], random_flip=True ),
-                    TrainingDataGenerator(self, TrainingDataType.DST,  batch_size=self.batch_size, output_sample_types_flags=[ f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR | f.SIZE_64, f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL | f.SIZE_64], random_flip=True )
+                    TrainingDataGenerator(self, TrainingDataType.SRC,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL, 64] ], random_flip=True ),
+                    TrainingDataGenerator(self, TrainingDataType.DST,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL, 64] ], random_flip=True )
                 ])
                 
     #override

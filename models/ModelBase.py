@@ -111,6 +111,7 @@ class ModelBase(object):
         
         self.tf = gpufmkmgr.import_tf(self.gpu_idxs,allow_growth=False)
         self.keras = gpufmkmgr.import_keras()
+        self.keras_contrib = gpufmkmgr.import_keras_contrib()
  
         self.onInitialize(**in_options)
         
@@ -130,7 +131,7 @@ class ModelBase(object):
                         
             if self.sample_for_preview is None:
                 self.sample_for_preview = self.generate_next_sample()
-                
+
         print ("===== Model summary =====")
         print ("== Model name: " + self.get_model_name())
         print ("==")

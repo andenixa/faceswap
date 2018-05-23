@@ -23,22 +23,20 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         HEAD_FACE   = 0x000040,
         AVATAR_FACE = 0x000080,
         
-        MODE_BGR    = 0x000100,  #BGR
-        MODE_G      = 0x000200,  #Grayscale
-        MODE_GGG    = 0x000400,  #3xGrayscale 
-        MODE_M      = 0x000800,  #mask only
+        MODE_BGR         = 0x000100,  #BGR
+        MODE_G           = 0x000200,  #Grayscale
+        MODE_GGG         = 0x000400,  #3xGrayscale 
+        MODE_M           = 0x000800,  #mask only
+        MODE_BGR_SHUFFLE = 0x001000,  #BGR shuffle
 
         MASK_FULL   = 0x100000,
         MASK_EYES   = 0x200000,
-
-        SIZE_64     = 0x010000,
-        SIZE_128    = 0x020000,
-        SIZE_256    = 0x040000,
         
     #overrided
-    def onInitialize(self, random_flip=False, output_sample_types_flags=[], **kwargs):
+    def onInitialize(self, random_flip=False, normalize_tanh=False, output_sample_types=[], **kwargs):
         self.random_flip = random_flip        
-        self.output_sample_types_flags = output_sample_types_flags
+        self.normalize_tanh = normalize_tanh
+        self.output_sample_types = output_sample_types
         
     #overrided
     def onProcessSample(self, sample, debug):
@@ -64,7 +62,7 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         images = [[None]*3 for _ in range(4)]
             
         outputs = []        
-        for t in self.output_sample_types_flags:
+        for t,size in self.output_sample_types:
             if t & self.SampleTypeFlags.SOURCE != 0:
                 img_type = 0
             elif t & self.SampleTypeFlags.WARPED != 0:
@@ -96,15 +94,6 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
                 
             img = images[img_type][mask_type]
             
-            if t & self.SampleTypeFlags.SIZE_64 != 0:
-                size = 64
-            elif t & self.SampleTypeFlags.SIZE_128 != 0:
-                size = 128
-            elif t & self.SampleTypeFlags.SIZE_256 != 0:
-                size = 256
-            else:
-                raise ValueError ('expected SampleTypeFlags size')
-                
             if t & self.SampleTypeFlags.HALF_FACE != 0:
                 target_face_type = FaceType.HALF            
             elif t & self.SampleTypeFlags.FULL_FACE != 0:
@@ -118,14 +107,17 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
                 
             if target_face_type > sample.face_type:
                 raise Exception ('sample %s type %s does not match model requirement %s. Consider extract necessary type of faces.' % (sample.filename, sample.face_type, target_face_type) )
-
+            
             img = cv2.warpAffine( img, LandmarksProcessor.get_transform_mat (sample.landmarks, size, target_face_type), (size,size), flags=cv2.INTER_LANCZOS4 )
- 
+            
             img_bgr  = img[...,0:3]
             img_mask = img[...,3:4]
  
             if t & self.SampleTypeFlags.MODE_BGR != 0:
                 img = img
+            elif t & self.SampleTypeFlags.MODE_BGR_SHUFFLE != 0:
+                img_bgr = np.take (img_bgr, np.random.permutation(img_bgr.shape[-1]), axis=-1)
+                img = np.concatenate ( (img_bgr,img_mask) , -1 )
             elif t & self.SampleTypeFlags.MODE_G != 0:
                 img = np.concatenate ( (np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1),img_mask) , -1 )
             elif t & self.SampleTypeFlags.MODE_GGG != 0:
@@ -137,10 +129,13 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
             else:
                 raise ValueError ('expected SampleTypeFlags mode')
      
+            if not debug and self.normalize_tanh:
+                img = img * 2.0 - 1.0
+                
             outputs.append ( img )
 
         if debug:
-            result = (source,)
+            result = ()
 
             for output in outputs:
                 if output.shape[2] < 4:

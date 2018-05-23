@@ -19,6 +19,7 @@ def import_dlib(device_idx):
 tf_module = None
 tf_session = None
 keras_module = None
+keras_contrib_module = None
 keras_vggface_module = None
 
 def get_tf_session():
@@ -97,6 +98,19 @@ def finalize_keras():
     global keras_module
     keras_module.backend.clear_session()
     keras_module = None
+    
+def import_keras_contrib():
+    global keras_contrib_module
+    
+    if keras_contrib_module is not None:
+        raise Exception ('Multiple import of keras_contrib is not allowed, reorganize your program.')
+    import keras_contrib
+    keras_contrib_module = keras_contrib
+    return keras_contrib_module
+    
+def finalize_keras_contrib():
+    global keras_contrib_module
+    keras_contrib_module = None
     
 def import_keras_vggface(optional=False):
     global keras_vggface_module

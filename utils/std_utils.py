@@ -1,6 +1,5 @@
 import os
 import sys
-import contextlib
 
 class suppress_stdout_stderr(object):
     def __enter__(self):

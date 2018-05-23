@@ -28,9 +28,6 @@ mean_face_y = np.array([
 landmarks_2D = np.stack( [ mean_face_x, mean_face_y ], axis=1 )
 
 def get_transform_mat (image_landmarks, output_size, face_type):
-    if output_size != 64 and output_size != 128 and output_size != 256 and output_size != 512:
-        raise ValueError ('get_transform_mat() output_size must be power of 2')
- 
     if not isinstance(image_landmarks, np.ndarray):
         image_landmarks = np.array (image_landmarks) 
         
@@ -41,7 +38,7 @@ def get_transform_mat (image_landmarks, output_size, face_type):
         a, c = mat[0,0], mat[1,0]
         scale = math.sqrt((a * a) + (c * c))
         
-        padding = (output_size // 64) * 32
+        padding = (output_size / 64) * 32
         
         mat = np.eye ( 2,3 )
         mat[0,2] = -centroid[0]
@@ -52,9 +49,9 @@ def get_transform_mat (image_landmarks, output_size, face_type):
         if face_type == FaceType.HALF:
             padding = 0
         elif face_type == FaceType.FULL:
-            padding = (output_size // 64) * 12
+            padding = (output_size / 64) * 12
         elif face_type == FaceType.HEAD:
-            padding = (output_size // 64) * 24
+            padding = (output_size / 64) * 24
         else:
             raise ValueError ('wrong face_type')
             
