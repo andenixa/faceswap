@@ -1,3 +1,4 @@
+import inspect
 import os
 import operator
 from pathlib import Path
@@ -186,11 +187,9 @@ class ModelBase(object):
         return []
 
     #overridable if you want model name differs from folder name
-    def get_model_name(self):                    
-        import inspect
-        res = inspect.getmodule(self)
-        return os.path.split(res.__file__)[0].rsplit("_", 1)[1]            
-       
+    def get_model_name(self):
+        return Path(inspect.getmodule(self).__file__).parent.name.rsplit("_", 1)[1]
+        
     #overridable
     def get_converter(self, **in_options):
         #return existing or your own converter which derived from base        
