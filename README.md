@@ -99,10 +99,11 @@ Torrent page: https://rutracker.org/forum/viewtopic.php?p=75318742 (magnet link 
 
 - Nicolas Cage.
 
+- Cage/Trump workspace
+
 download from here: https://mega.nz/#F!y1ERHDaL!PPwg01PQZk0FhWLVo5_MaQ
 
-### ** Pull requesting **:
+### **Pull requesting**:
 
-Before PR better ask me what you want to change or add. 
-
-I dont need mid-progers which read about patterns and python super features and going to make 3 storey classes to abstract robust 5 strings of code.
+I understand some people want to help. But result of mass people contribution we can see in deepfakes\faceswap.
+High chance I will decline PR. Therefore before PR better ask me what you want to change or add to save your time.
