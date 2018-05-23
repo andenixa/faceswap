@@ -100,3 +100,9 @@ Torrent page: https://rutracker.org/forum/viewtopic.php?p=75318742 (magnet link 
 - Nicolas Cage.
 
 download from here: https://mega.nz/#F!y1ERHDaL!PPwg01PQZk0FhWLVo5_MaQ
+
+### ** Pull requesting **:
+
+Before PR better ask me what you want to change or add. 
+
+I dont need mid-progers which read about patterns and python super features and going to make 3 storey classes to abstract robust 5 strings of code.
