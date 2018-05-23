@@ -8,7 +8,7 @@ from utils import random_utils
 from enum import IntEnum
 from models import TrainingDataType
 
-class FaceTrainingDataGenerator(TrainingDataGeneratorBase):
+class TrainingDataGenerator(TrainingDataGeneratorBase):
     class SampleTypeFlags(IntEnum):
         SOURCE               = 0x000001,
         WARPED               = 0x000002,
@@ -35,28 +35,16 @@ class FaceTrainingDataGenerator(TrainingDataGeneratorBase):
         self.normalize_tanh = normalize_tanh
         self.output_sample_types = output_sample_types
         
-        allowed_types = [TrainingDataType.FACE_SRC,
-                         TrainingDataType.FACE_DST,
-                         TrainingDataType.FACE_SRC_WITH_NEAREST,
-                         TrainingDataType.FACE_SRC_ONLY_10_NEAREST_TO_DST_ONLY_1,
-                         TrainingDataType.FACE_DST_ONLY_1,
-                         TrainingDataType.FACE_SRC_YAW_SORTED, 
-                         TrainingDataType.FACE_DST_YAW_SORTED,
-                         TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST,
-                         TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST]
         
-        if self.trainingdatatype not in allowed_types:
-            raise Exception ('unsupported %s for FaceTrainingDataGenerator. Allowed types: %s' % (self.trainingdatatype, allowed_types) )
-
-    
 
     #overrided
     def onProcessSample(self, sample, debug):
         source = sample.load_bgr()
-        has_landmarks = sample.landmarks is not None
         h,w,c = source.shape
+        
+        is_face_sample = self.trainingdatatype >= TrainingDataType.FACE_BEGIN and self.trainingdatatype <= TrainingDataType.FACE_END
 
-        if debug and has_landmarks:
+        if debug and is_face_sample:
             LandmarksProcessor.draw_landmarks (source, sample.landmarks, (0, 1, 0))
 
         params = image_utils.gen_warp_params(source, self.random_flip)
@@ -84,7 +72,7 @@ class FaceTrainingDataGenerator(TrainingDataGeneratorBase):
                     
             if images[img_type][mask_type] is None:
                 img = source
-                if has_landmarks:
+                if is_face_sample:
                     if mask_type == 1:
                         img = np.concatenate( (img, LandmarksProcessor.get_image_hull_mask (source, sample.landmarks) ), -1 )                    
                     elif mask_type == 2:
@@ -97,7 +85,7 @@ class FaceTrainingDataGenerator(TrainingDataGeneratorBase):
                 
             img = images[img_type][mask_type]
 
-            if has_landmarks:
+            if is_face_sample:
                 if t & self.SampleTypeFlags.HALF_FACE != 0:
                     target_face_type = FaceType.HALF            
                 elif t & self.SampleTypeFlags.FULL_FACE != 0:
@@ -128,7 +116,7 @@ class FaceTrainingDataGenerator(TrainingDataGeneratorBase):
                 img = np.concatenate ( (np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1),img_mask) , -1 )
             elif t & self.SampleTypeFlags.MODE_GGG != 0:
                 img = np.concatenate ( ( np.repeat ( np.expand_dims(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY),-1), (3,), -1), img_mask), -1)
-            elif t & self.SampleTypeFlags.MODE_M != 0:
+            elif is_face_sample and t & self.SampleTypeFlags.MODE_M != 0:
                 if mask_type== 0:
                     raise ValueError ('no mask mode defined')
                 img = img_mask

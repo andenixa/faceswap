@@ -8,6 +8,8 @@ from facelib import FaceType
 class TrainingDataType(IntEnum):
     IMAGE_SRC = 0 #raw image
     IMAGE_DST = 1 #
+    
+    FACE_BEGIN = 2
     FACE_SRC = 2 #raw aligned face image unsorted
     FACE_DST = 3    
     FACE_SRC_WITH_NEAREST = 4 # as FACE_SRC but samples can return get_random_nearest_target_sample()
@@ -17,6 +19,7 @@ class TrainingDataType(IntEnum):
     FACE_DST_YAW_SORTED = 8 # sorted by yaw
     FACE_SRC_YAW_SORTED_AS_DST = 9 #sorted by yaw but included only yaws which exist in DST_YAW_SORTED also automatic mirrored
     FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST = 10 #same as SRC_YAW_SORTED_AS_DST but samples can return get_random_nearest_target_sample()
+    FACE_END = 10
     
     QTY = 11
     

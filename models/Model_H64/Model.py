@@ -61,11 +61,11 @@ class Model(ModelBase):
         self.autoencoder_dst.compile(optimizer=optimizer, loss=[dssimloss, 'mae'])
   
         if self.is_training_mode:
-            from models import FaceTrainingDataGenerator
-            f = FaceTrainingDataGenerator.SampleTypeFlags 
+            from models import TrainingDataGenerator
+            f = TrainingDataGenerator.SampleTypeFlags 
             self.set_training_data_generators ([            
-                    FaceTrainingDataGenerator(self, TrainingDataType.FACE_SRC,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL, 64] ], random_flip=True ),
-                    FaceTrainingDataGenerator(self, TrainingDataType.FACE_DST,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL, 64] ], random_flip=True )
+                    TrainingDataGenerator(self, TrainingDataType.FACE_SRC,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL, 64] ], random_flip=True ),
+                    TrainingDataGenerator(self, TrainingDataType.FACE_DST,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_BGR, 64], [f.TRANSFORMED | f.HALF_FACE | f.MODE_M | f.MASK_FULL, 64] ], random_flip=True )
                 ])
                 
     #override
