@@ -1,4 +1,4 @@
-## **OpenDeepFaceSwap** is global refactoring fork of FaceSwap.
+## **DeepFaceLab** is global refactoring fork of FaceSwap.
 
 **Facesets** of FaceSwap or FakeApp are **not compatible** with this repo. You should to run extract again.
 
