@@ -186,9 +186,17 @@ class ModelBase(object):
         return []
 
     #overridable   
-    def get_model_name(self):
+    def get_model_name(self):                    
+        try:
+            return self._model_name
+        except AttributeError:
+            import inspect
+            res = inspect.getmodule(self)
+            self._model_name = os.path.split(res.__file__)[0].rsplit("_", 1)[1]        
+        return self._model_name         
+    
         #also used as prefix for model files
-        return "ModelBase"
+        #return "ModelBase"
         
     #overridable
     def get_converter(self, **in_options):
