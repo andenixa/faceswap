@@ -189,9 +189,16 @@ class ModelBase(object):
         return []
 
     #overridable   
-    def get_model_name(self):
+    def get_model_name(self):                    
+        try:
+            return self._model_name
+        except AttributeError:
+            ## this will effectively give you your model name all the time
+            self._model_name = os.path.split(__file__)[0].rsplit("_", 1)[1]
+        return self._model_name             
+    
         #also used as prefix for model files
-        return "ModelBase"
+        #return "ModelBase"
         
     #overridable
     def get_converter(self, **in_options):
