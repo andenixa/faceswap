@@ -54,7 +54,7 @@ class ModelBase(object):
         self.batch_size = 1
         self.write_preview_history = write_preview_history
         self.debug = debug
-        self.supress_std_once = ('TF_SUPPRESS_STD' in os.environ.keys() and os.environ['TF_SUPPRESS_STD'] == '1')
+        self.supress_std = ('TF_SUPPRESS_STD' in os.environ.keys() and os.environ['TF_SUPPRESS_STD'] == '1')
         
         if self.model_data_path.exists():            
             model_data = pickle.loads ( self.model_data_path.read_bytes() )            
@@ -258,7 +258,7 @@ class ModelBase(object):
         return [next(generator) for generator in self.generator_list]
 
     def train_one_epoch(self):    
-        if self.supress_std_once:
+        if self.supress_std:
             supressor = std_utils.suppress_stdout_stderr()
             supressor.__enter__()
             
@@ -272,9 +272,8 @@ class ModelBase(object):
 
         self.loss_history.append ( [float(loss[1]) for loss in losses] )
         
-        if self.supress_std_once:
+        if self.supress_std:
             supressor.__exit__()
-            self.supress_std_once = False
                   
         if self.write_preview_history:
             if self.epoch % 10 == 0:
