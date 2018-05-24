@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from scandir import scandir
 
@@ -18,14 +17,14 @@ def get_image_unique_filestem_paths(dir_path, verbose=False):
     result = get_image_paths(dir_path)   
     result_dup = set()    
     
-    for fn in result[:]:
-        bn = Path(fn).stem         
-        if bn in result_dup:            
-            result.remove(fn)
+    for f in result[:]:
+        f_stem = Path(f).stem
+        if f_stem in result_dup:            
+            result.remove(f)
             if verbose:
-                print ("Duplicate filenames are not allowed, skipping: %s" % os.path.basename(fn))            
+                print ("Duplicate filenames are not allowed, skipping: %s" % Path(f).name )            
             continue            
-        result_dup.add(bn)
+        result_dup.add(f_stem)
             
     return result
     
