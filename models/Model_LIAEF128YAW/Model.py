@@ -63,8 +63,8 @@ class Model(ModelBase):
             from models import TrainingDataGenerator
             f = TrainingDataGenerator.SampleTypeFlags 
             self.set_training_data_generators ([            
-                    TrainingDataGenerator(self, TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_M | f.MASK_FULL, 128] ], random_flip=True ),
-                    TrainingDataGenerator(self, TrainingDataType.FACE_DST,  batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_M | f.MASK_FULL, 128] ], random_flip=True )
+                    TrainingDataGenerator(TrainingDataType.FACE_YAW_SORTED_AS_TARGET, self.training_data_src_path, target_training_data_path=self.training_data_dst_path, debug=self.is_debug(), batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_M | f.MASK_FULL, 128] ], random_flip=True ),
+                    TrainingDataGenerator(TrainingDataType.FACE,                      self.training_data_dst_path,                                                        debug=self.is_debug(), batch_size=self.batch_size, output_sample_types=[ [f.WARPED_TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_BGR, 128], [f.TRANSFORMED | f.FULL_FACE | f.MODE_M | f.MASK_FULL, 128] ], random_flip=True )
                 ])
             
     #override

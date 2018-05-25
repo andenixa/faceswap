@@ -1,30 +1,20 @@
-import inspect
 import os
+import time
+import inspect
 import operator
-from pathlib import Path
 import pickle
-from utils.AlignedPNG import AlignedPNG
+from pathlib import Path
 from utils import Path_utils
 from utils import std_utils
 from utils import image_utils
 import numpy as np
-from tqdm import tqdm
-import gpufmkmgr
-import time
-from facelib import FaceType
-from facelib import LandmarksProcessor
-from .TrainingDataGeneratorBase import TrainingDataGeneratorBase
-
-from .BaseTypes import TrainingDataType
-from .BaseTypes import TrainingDataSample
-
 import cv2
+import gpufmkmgr
+from .TrainingDataGeneratorBase import TrainingDataGeneratorBase
 
 '''
 You can implement your own model. Check examples.
-
 '''
-
 class ModelBase(object):
 
     #DONT OVERRIDE
@@ -42,7 +32,6 @@ class ModelBase(object):
         
         self.training_data_src_path = training_data_src_path
         self.training_data_dst_path = training_data_dst_path
-        self.training_datas = [None]*TrainingDataType.QTY
         
         self.src_images_paths = None
         self.dst_images_paths = None
@@ -285,7 +274,7 @@ class ModelBase(object):
         #............."Saving... 
         loss_string = "Training [#{0:06d}][{1:04d}ms]".format ( self.epoch, int(epoch_time*1000) % 10000 )
         for (loss_name, loss_value) in losses:
-            loss_string += " %s: %.5f" % (loss_name, loss_value)
+            loss_string += " %s:%.3f" % (loss_name, loss_value)
 
         return loss_string
         
@@ -316,183 +305,4 @@ class ModelBase(object):
     def get_strpath_storage_for_file(self, filename):
         return str( self.model_path / (self.get_model_name() + '_' + filename) )
 
-    def get_training_data(self, dtype):
-        if not isinstance(dtype, TrainingDataType):
-            raise Exception('get_training_data dtype is not TrainingDataType')
-    
-        
-        if dtype == TrainingDataType.IMAGE_SRC:
-            if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = [ TrainingDataSample(filename=filename) for filename in tqdm( Path_utils.get_image_paths(self.training_data_src_path), desc="Loading" ) ]
-            return self.training_datas[dtype]
-            
-        elif dtype == TrainingDataType.IMAGE_DST:
-            if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = [ TrainingDataSample(filename=filename) for filename in tqdm( Path_utils.get_image_paths(self.training_data_dst_path), desc="Loading" ) ]
-            return self.training_datas[dtype]
-            
-        elif dtype == TrainingDataType.FACE_SRC:
-            if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_LOAD( [ TrainingDataSample(filename=filename) for filename in Path_utils.get_image_paths(self.training_data_src_path) ] )
-            return self.training_datas[dtype]
-            
-        elif dtype == TrainingDataType.FACE_DST:
-            if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_LOAD( [ TrainingDataSample(filename=filename) for filename in Path_utils.get_image_paths(self.training_data_dst_path) ] )
-            return self.training_datas[dtype]
-            
-        elif dtype == TrainingDataType.FACE_SRC_WITH_NEAREST:
-            if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_WITH_NEAREST_Y( self.get_training_data(TrainingDataType.FACE_SRC), self.get_training_data(TrainingDataType.FACE_DST) )
-            return self.training_datas[dtype]
-            
-        elif dtype == TrainingDataType.FACE_SRC_ONLY_10_NEAREST_TO_DST_ONLY_1:
-            if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_ONLY_n_NEAREST_TO_Y_ONLY_1( self.get_training_data(TrainingDataType.FACE_SRC), 10, self.get_training_data(TrainingDataType.FACE_DST_ONLY_1) )
-            return self.training_datas[dtype]
-        
-        elif dtype == TrainingDataType.FACE_DST_ONLY_1:
-            if self.training_datas[dtype] is None:  
-                self.training_datas[dtype] = X_ONLY_1( self.get_training_data(TrainingDataType.FACE_DST)  )
-            return self.training_datas[dtype]
-          
-        elif dtype == TrainingDataType.FACE_SRC_YAW_SORTED:
-            if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_YAW_SORTED( self.get_training_data(TrainingDataType.FACE_SRC) )
-            return self.training_datas[dtype]
-
-        elif dtype == TrainingDataType.FACE_DST_YAW_SORTED:
-            if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_YAW_SORTED( self.get_training_data(TrainingDataType.FACE_DST))
-            return self.training_datas[dtype]
-          
-        elif dtype == TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST:            
-            if self.training_datas[dtype] is None:
-                self.training_datas[dtype] = X_YAW_AS_Y_SORTED( self.get_training_data(TrainingDataType.FACE_SRC_YAW_SORTED), self.get_training_data(TrainingDataType.FACE_DST_YAW_SORTED) )
-            return self.training_datas[dtype]
-         
-        elif dtype == TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST:
-            if self.training_datas[dtype] is None:     
-                self.training_datas[dtype] = calc_X_YAW_AS_Y_SORTED_WITH_NEAREST_Y ( self.get_training_data(TrainingDataType.FACE_SRC_YAW_SORTED_AS_DST), self.get_training_data(TrainingDataType.FACE_DST) )             
-                return self.training_datas[dtype]
-                
-        return None
-    
-def X_LOAD ( RAWS ):
-    sample_list = []
-    
-    for s in tqdm( RAWS, desc="Loading" ):
-
-        s_filename_path = Path(s.filename)
-        if s_filename_path.suffix != '.png':
-            print ("%s is not a png file required for training" % (s_filename_path.name) ) 
-            continue
-        
-        a_png = AlignedPNG.load ( str(s_filename_path) )
-        if a_png is None:
-            print ("%s failed to load" % (s_filename_path.name) )
-            continue
-
-        d = a_png.getFaceswapDictData()
-        if d is None or d['landmarks'] is None or d['yaw_value'] is None:
-            print ("%s - no embedded faceswap info found required for training" % (s_filename_path.name) ) 
-            continue
-            
-        face_type = d['face_type'] if 'face_type' in d.keys() else 'full_face'        
-        face_type = FaceType.fromString (face_type) 
-        sample_list.append( s.copy_and_set(face_type=face_type, shape=a_png.get_shape(), landmarks=d['landmarks'], yaw=d['yaw_value']) )
-        
-    return sample_list
-    
-def X_WITH_NEAREST_Y (X,Y ):
-    new_sample_list = []
-    for sample in tqdm(X, desc="Sorting"):
-        nearest = [ (i, np.square( d.landmarks-sample.landmarks ).sum() ) for i,d in enumerate(Y) ]                
-        nearest = sorted(nearest, key=operator.itemgetter(-1), reverse=False)
-        
-        nearest = [ Y[x[0]] for x in nearest[0:10] ]          
-        new_sample_list.append ( sample.copy_and_set( nearest_target_list=nearest ) )
-    return new_sample_list
-
-def X_ONLY_1(X):
-    if len(X) == 0:
-        raise Exception('Not enough training data.')
-     
-    return [ X[0] ]
-
-def X_ONLY_n_NEAREST_TO_Y_ONLY_1(X,n,Y):
-    target = Y[0]    
-    nearest = [ (i, np.square( d.landmarks[17:]-target.landmarks[17:] ).sum() ) for i,d in enumerate(X) ]
-    nearest = sorted(nearest, key=operator.itemgetter(-1), reverse=False)
-    nearest = [ X[s[0]].copy_and_set (nearest_target_list=[target]) for s in nearest[0:n] ]      
-    return nearest
-    
-def X_YAW_SORTED( YAW_RAWS ):
-
-    lowest_yaw, highest_yaw = -32, +32      
-    gradations = 64
-    diff_rot_per_grad = abs(highest_yaw-lowest_yaw) / gradations
-
-    yaws_sample_list = [None]*gradations
-    
-    for i in tqdm( range(0, gradations), desc="Sorting" ):
-        yaw = lowest_yaw + i*diff_rot_per_grad
-        next_yaw = lowest_yaw + (i+1)*diff_rot_per_grad
-
-        yaw_samples = []        
-        for s in YAW_RAWS:                
-            s_yaw = s.yaw
-            if (i == 0            and s_yaw < next_yaw) or \
-               (i  < gradations-1 and s_yaw >= yaw and s_yaw < next_yaw) or \
-               (i == gradations-1 and s_yaw >= yaw):
-                yaw_samples.append ( s )
-                
-        if len(yaw_samples) > 0:
-            yaws_sample_list[i] = yaw_samples
-    
-    return yaws_sample_list
-    
-def X_YAW_AS_Y_SORTED (s, t):
-    l = len(s)
-    if l != len(t):
-        raise Exception('X_YAW_AS_Y_SORTED() s_len != t_len')
-    b = l // 2
-    
-    s_idxs = np.argwhere ( np.array ( [ 1 if x != None else 0  for x in s] ) == 1 )[:,0]
-    t_idxs = np.argwhere ( np.array ( [ 1 if x != None else 0  for x in t] ) == 1 )[:,0]
-    
-    new_s = [None]*l    
-    
-    for t_idx in t_idxs:
-        search_idxs = []        
-        for i in range(0,l):
-            search_idxs += [t_idx - i, (l-t_idx-1) - i, t_idx + i, (l-t_idx-1) + i]
-
-        for search_idx in search_idxs:            
-            if search_idx in s_idxs:
-                mirrored = ( t_idx != search_idx and ((t_idx < b and search_idx >= b) or (search_idx < b and t_idx >= b)) )
-                new_s[t_idx] = [ sample.copy_and_set(mirror=True, yaw=-sample.yaw, landmarks=LandmarksProcessor.mirror_landmarks (sample.landmarks, sample.shape[1] ))
-                                      for sample in s[search_idx] 
-                                    ] if mirrored else s[search_idx]                
-                break
-             
-    return new_s
-    
-def calc_X_YAW_AS_Y_SORTED_WITH_NEAREST_Y( X, Y):                       
-    new_X = []
-    for sample_list in tqdm(X, desc="Sorting"):
-        new_sample_list = None
-        
-        if sample_list != None:
-            new_sample_list = []
-            for s in sample_list:  
-                sss = [ (i, np.square( d.landmarks-s.landmarks ).sum() ) for i,d in enumerate(Y) ]                
-                sss = sorted(sss, key=operator.itemgetter(-1), reverse=False)
-                
-                nearest_target_list = [ Y[x[0]] for x in sss[0:10] ]              
-               
-                new_sample_list.append ( s.copy_and_set( nearest_target_list=nearest_target_list ) )
-                
-        new_X.append ( new_sample_list )
-
-    return new_X  
+ 

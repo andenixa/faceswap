@@ -4,8 +4,8 @@ class FaceType(IntEnum):
     HALF = 0,
     FULL = 1,
     HEAD = 2,    
-    AVATAR = 3,
-    MARK_ONLY = 4,
+    AVATAR = 3,    #centered nose only
+    MARK_ONLY = 4, #no align at all, just embedded faceinfo
     QTY = 5
 
     @staticmethod

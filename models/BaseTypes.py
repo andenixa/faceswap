@@ -6,22 +6,15 @@ from facelib import FaceType
 
 
 class TrainingDataType(IntEnum):
-    IMAGE_SRC = 0 #raw image
-    IMAGE_DST = 1 #
+    IMAGE = 0 #raw image
     
-    FACE_BEGIN = 2
-    FACE_SRC = 2 #raw aligned face image unsorted
-    FACE_DST = 3    
-    FACE_SRC_WITH_NEAREST = 4 # as FACE_SRC but samples can return get_random_nearest_target_sample()
-    FACE_SRC_ONLY_10_NEAREST_TO_DST_ONLY_1 = 5 #currently unused, idea to get only 10 nearest samples to target one face for PHOTO256 model
-    FACE_DST_ONLY_1 = 6  #currently unused, idea to get only 10 nearest samples to target one face for PHOTO256 model
-    FACE_SRC_YAW_SORTED = 7 # sorted by yaw
-    FACE_DST_YAW_SORTED = 8 # sorted by yaw
-    FACE_SRC_YAW_SORTED_AS_DST = 9 #sorted by yaw but included only yaws which exist in DST_YAW_SORTED also automatic mirrored
-    FACE_SRC_YAW_SORTED_AS_DST_WITH_NEAREST = 10 #same as SRC_YAW_SORTED_AS_DST but samples can return get_random_nearest_target_sample()
-    FACE_END = 10
+    FACE_BEGIN = 1
+    FACE = 1                      #aligned face unsorted
+    FACE_YAW_SORTED = 2           #sorted by yaw
+    FACE_YAW_SORTED_AS_TARGET = 3 #sorted by yaw and included only yaws which exist in TARGET also automatic mirrored
+    FACE_END = 3
     
-    QTY = 11
+    QTY = 4
     
     
 class TrainingDataSample(object):
