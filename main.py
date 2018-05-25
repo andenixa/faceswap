@@ -64,11 +64,11 @@ if __name__ == "__main__":
     
     def process_train(arguments):      
     
-        if 'ODFS_TARGET_EPOCH' in os.environ.keys():
-            arguments.target_epoch = int ( os.environ['ODFS_TARGET_EPOCH'] )
+        if 'DFL_TARGET_EPOCH' in os.environ.keys():
+            arguments.target_epoch = int ( os.environ['DFL_TARGET_EPOCH'] )
     
-        if 'ODFS_BATCH_SIZE' in os.environ.keys():
-            arguments.batch_size = int ( os.environ['ODFS_BATCH_SIZE'] )
+        if 'DFL_BATCH_SIZE' in os.environ.keys():
+            arguments.batch_size = int ( os.environ['DFL_TARGET_EPOCH'] )
 
         from mainscripts import Trainer
         Trainer.main (

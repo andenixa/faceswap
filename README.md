@@ -42,16 +42,16 @@
 * H128 Cage:
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H128_Cage_0.jpg)
 
-- **DF (4GB+)** - @dfaker model. As H128, but fullface model.
+- **DF (5GB+)** - @dfaker model. As H128, but fullface model.
 * DF example - later
 
-- **LIAEF128 (4GB+)** - new model. Result of combining DF, IAE, + experiments. Model tries to morph src face to dst, while keeping facial features of src face, but less agressive morphing. Model has problems with closed eyes recognizing.
+- **LIAEF128 (5GB+)** - new model. Result of combining DF, IAE, + experiments. Model tries to morph src face to dst, while keeping facial features of src face, but less agressive morphing. Model has problems with closed eyes recognizing.
 * LIAEF128 Cage:
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/LIAEF128_Cage_0.jpg)
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/LIAEF128_Cage_1.jpg)
 * LIAEF128 Cage video:
 * [![Watch the video](https://img.youtube.com/vi/mRsexePEVco/0.jpg)](https://www.youtube.com/watch?v=mRsexePEVco)
-- **LIAEF128YAW (4GB+)** - currently testing. Useful when your src faceset has too many side faces vs dst faceset. It feeds NN by sorted samples by yaw, so you can use unlimited of src samples.
+- **LIAEF128YAW (5GB+)** - currently testing. Useful when your src faceset has too many side faces vs dst faceset. It feeds NN by sorted samples by yaw, so you can use unlimited of src samples.
 - **MIAEF128 (5GB+)** - as LIAEF128, but also it tries to match brightness/color features.
 * MIAEF128 model diagramm:
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/MIAEF128_diagramm.png)

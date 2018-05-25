@@ -17,8 +17,8 @@ class Model(ModelBase):
 
     #override
     def onInitialize(self, batch_size=-1, **in_options):
-        if self.gpu_total_vram_gb < 4:
-            raise Exception ('Sorry, this model works only on 4GB+ GPU')
+        if self.gpu_total_vram_gb < 5:
+            raise Exception ('Sorry, this model works only on 5GB+ GPU')
             
         self.batch_size = batch_size
         if self.batch_size == 0:          

@@ -138,7 +138,7 @@ class Model(ModelBase):
     def Encoder(self, input_layer, created_vram_gb):
         x = input_layer
 
-        if created_vram_gb >= 4:
+        if created_vram_gb >= 5:
             x = conv(self.keras, x, 128)
             x = conv(self.keras, x, 256)
             x = conv(self.keras, x, 512)
@@ -160,7 +160,7 @@ class Model(ModelBase):
         return self.keras.models.Model(input_layer, x)
         
     def Decoder(self, created_vram_gb):
-        if created_vram_gb >= 4:
+        if created_vram_gb >= 5:
             input_ = self.keras.layers.Input(shape=(16, 16, 512))
             x = input_
             x = upscale(self.keras, x, 512)
