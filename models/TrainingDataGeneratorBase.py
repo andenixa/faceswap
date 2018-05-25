@@ -28,7 +28,7 @@ class TrainingDataGeneratorBase(object):
         if training_data_path is None:
             raise Exception('training_data_path is None')
             
-        self.training_data_path = Path(training_data_path) if training_data_path is not None else None
+        self.training_data_path = Path(training_data_path)
         self.target_training_data_path = Path(target_training_data_path) if target_training_data_path is not None else None
 
         self.debug = debug
