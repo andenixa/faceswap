@@ -33,12 +33,12 @@
 
 ### **Model types**:
 
-- **H64 (2GB+)** - half face with 64 resolution. It is as original FakeApp or FaceSwap, but with TensorFlow DSSIM Loss func and separated mask decoder + better ConverterMasked.
+- **H64 (2GB+)** - half face with 64 resolution. It is as original FakeApp or FaceSwap, but with TensorFlow DSSIM Loss func and separated mask decoder + better ConverterMasked. for 2GB and 3GB VRAM model works in reduced mode.
 * H64 Robert Downey Jr.:
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H64_Downey_0.jpg)
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H64_Downey_1.jpg)
 
-- **H128 (3GB+)** - as H64, but in 128 resolution. Better face details.
+- **H128 (3GB+)** - as H64, but in 128 resolution. Better face details. for 3GB and 4GB VRAM model works in reduced mode.
 * H128 Cage:
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H128_Cage_0.jpg)
 
