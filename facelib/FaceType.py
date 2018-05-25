@@ -1,33 +1,34 @@
 from enum import IntEnum
+
 class FaceType(IntEnum):
     HALF = 0,
     FULL = 1,
-    HEAD = 2,
+    HEAD = 2,    
     AVATAR = 3,
-    QTY = 4
+    MARK_ONLY = 4,
+    QTY = 5
 
     @staticmethod
     def fromString (s):
-        if s == 'half_face':
-            return FaceType.HALF
-        elif s == 'full_face':
-            return FaceType.FULL
-        elif s == 'head':
-            return FaceType.HEAD
-        elif s == 'avatar':
-            return FaceType.AVATAR
-        else:
+        r = from_string_dict.get (s.lower())
+        if r is None:
             raise Exception ('FaceType.fromString value error')
+        return r            
             
     @staticmethod        
     def toString (face_type):
-        if face_type == FaceType.HALF:
-            return 'half_face'
-        elif face_type == FaceType.FULL:
-            return 'full_face'
-        elif face_type == FaceType.HEAD:
-            return 'head'
-        elif face_type == FaceType.AVATAR:
-            return 'avatar'
-        else:
-            raise Exception ('FaceType.toString value error')
+        return to_string_list[face_type]
+        
+from_string_dict = {'half_face': FaceType.HALF,
+                    'full_face': FaceType.FULL,
+                    'head' : FaceType.HEAD,
+                    'avatar' : FaceType.AVATAR,
+                    'mark_only' : FaceType.MARK_ONLY,
+                    }
+to_string_list = [ 'half_face',
+                   'full_face',
+                   'head',
+                   'avatar',
+                   'mark_only'   
+                    ]
+                        

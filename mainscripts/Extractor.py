@@ -13,7 +13,7 @@ from utils import image_utils
 from facelib import FaceType
 import facelib 
 import gpufmkmgr
-         
+
 from utils.SubprocessorBase import SubprocessorBase
 class ExtractSubprocessor(SubprocessorBase):
 
@@ -217,7 +217,7 @@ class ExtractSubprocessor(SubprocessorBase):
             print ( 'Failed to extract %s, reason: cv2.imread() fail.' % ( str(filename_path) ) )
         else:
             if self.type == 'rects':
-                rects = self.e.extract_from_bgr (image)  
+                rects = self.e.extract_from_bgr (image)
                 return [str(filename_path), rects]
 
             elif self.type == 'landmarks':
@@ -233,17 +233,22 @@ class ExtractSubprocessor(SubprocessorBase):
                     debug_output_file = '{}_{}'.format( str(Path(str(self.output_path) + '_debug') / filename_path.stem),  'debug.png')
                     debug_image = image.copy()
                     
-                for (face_idx, face) in enumerate(faces):                            
+                for (face_idx, face) in enumerate(faces):         
+                    output_file = '{}_{}{}'.format(str(self.output_path / filename_path.stem), str(face_idx), '.png')
+                    
                     rect = face[0]
                     image_landmarks = np.array(face[1])
-                    image_to_face_mat = facelib.LandmarksProcessor.get_transform_mat (image_landmarks, self.image_size, self.face_type)
-                    output_file = '{}_{}{}'.format(str(self.output_path / filename_path.stem), str(face_idx), '.png')
 
                     if self.debug:
                         facelib.LandmarksProcessor.draw_rect_landmarks (debug_image, rect, image_landmarks, self.image_size, self.face_type)
 
-                    face_image = cv2.warpAffine(image, image_to_face_mat, (self.image_size, self.image_size))
-                    face_image_landmarks = facelib.LandmarksProcessor.transform_points (image_landmarks, image_to_face_mat)
+                    if self.face_type == FaceType.MARK_ONLY:                        
+                        face_image = image
+                        face_image_landmarks = image_landmarks
+                    else:
+                        image_to_face_mat = facelib.LandmarksProcessor.get_transform_mat (image_landmarks, self.image_size, self.face_type)       
+                        face_image = cv2.warpAffine(image, image_to_face_mat, (self.image_size, self.image_size), cv2.INTER_LANCZOS4)
+                        face_image_landmarks = facelib.LandmarksProcessor.transform_points (image_landmarks, image_to_face_mat)
                     
                     cv2.imwrite(output_file, face_image)
                     

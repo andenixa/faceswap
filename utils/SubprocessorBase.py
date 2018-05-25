@@ -139,7 +139,7 @@ class SubprocessorBase(object):
                         obj = p['cq'].get()
                         obj_op = obj['op']
                         
-                        if obj_op == 'success':             
+                        if obj_op == 'success':   
                             data = obj['data']
                             result = obj['result']
                             
@@ -167,7 +167,7 @@ class SubprocessorBase(object):
                             p['sq'].put ( {'op': 'data', 'data' : data} )
                             p['sent_time'] = time.time()
                             p['sent_data'] = data
-                            p['state'] = 'busy'                    
+                            p['state'] = 'busy'
                         
                     elif p['state'] == 'busy':
                         if (time.time() - p['sent_time']) > self.no_response_time_sec:

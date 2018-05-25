@@ -49,7 +49,17 @@ def DSSIMMaskLossClass(tf):
             return total_loss
             
     return DSSIMMaskLoss
-
+    
+def DSSIMLossClass(tf):
+    class DSSIMLoss(object):
+        def __init__(self):
+            pass
+            
+        def __call__(self,y_true, y_pred):
+            return (1.0 - tf.image.ssim (y_true, y_pred, 1.0)) / 2.0
+            
+    return DSSIMLoss
+    
 def MAEMaskLossClass(tf, keras):
     class MAEMaskLoss(object):
         def __init__(self,mask):
@@ -156,9 +166,9 @@ def conv(keras, input_tensor, filters):
     x = keras.layers.advanced_activations.LeakyReLU(0.1)(x)
     return x
     
-def upscale(keras, input_tensor, filters):
+def upscale(keras, input_tensor, filters, k_size=3):
     x = input_tensor
-    x = keras.layers.convolutional.Conv2D(filters * 4, kernel_size=3, padding='same')(x)
+    x = keras.layers.convolutional.Conv2D(filters * 4, kernel_size=k_size, padding='same')(x)
     x = keras.layers.advanced_activations.LeakyReLU(0.1)(x)
     x = PixelShufflerClass(keras)()(x)
     return x

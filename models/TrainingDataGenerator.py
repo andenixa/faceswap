@@ -19,12 +19,13 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         FULL_FACE            = 0x000020,
         HEAD_FACE            = 0x000040,
         AVATAR_FACE          = 0x000080,
+        MARK_ONLY_FACE       = 0x000100,
         
-        MODE_BGR             = 0x000100,  #BGR
-        MODE_G               = 0x000200,  #Grayscale
-        MODE_GGG             = 0x000400,  #3xGrayscale 
-        MODE_M               = 0x000800,  #mask only
-        MODE_BGR_SHUFFLE     = 0x001000,  #BGR shuffle
+        MODE_BGR             = 0x001000,  #BGR
+        MODE_G               = 0x002000,  #Grayscale
+        MODE_GGG             = 0x004000,  #3xGrayscale 
+        MODE_M               = 0x008000,  #mask only
+        MODE_BGR_SHUFFLE     = 0x010000,  #BGR shuffle
 
         MASK_FULL            = 0x100000,
         MASK_EYES            = 0x200000,
@@ -85,18 +86,19 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
                 
             img = images[img_type][mask_type]
 
-            if is_face_sample:
-                if t & self.SampleTypeFlags.HALF_FACE != 0:
-                    target_face_type = FaceType.HALF            
-                elif t & self.SampleTypeFlags.FULL_FACE != 0:
-                    target_face_type = FaceType.FULL
-                elif t & self.SampleTypeFlags.HEAD_FACE != 0:
-                    target_face_type = FaceType.HEAD
-                elif t & self.SampleTypeFlags.AVATAR_FACE != 0:
-                    target_face_type = FaceType.AVATAR
-                else:
-                    raise ValueError ('expected SampleTypeFlags face type')
+            target_face_type = -1
+            if t & self.SampleTypeFlags.HALF_FACE != 0:
+                target_face_type = FaceType.HALF            
+            elif t & self.SampleTypeFlags.FULL_FACE != 0:
+                target_face_type = FaceType.FULL
+            elif t & self.SampleTypeFlags.HEAD_FACE != 0:
+                target_face_type = FaceType.HEAD
+            elif t & self.SampleTypeFlags.AVATAR_FACE != 0:
+                target_face_type = FaceType.AVATAR
+            elif t & self.SampleTypeFlags.MARK_ONLY_FACE != 0:
+                target_face_type = FaceType.MARK_ONLY
                     
+            if is_face_sample and target_face_type != -1 and target_face_type != FaceType.MARK_ONLY:
                 if target_face_type > sample.face_type:
                     raise Exception ('sample %s type %s does not match model requirement %s. Consider extract necessary type of faces.' % (sample.filename, sample.face_type, target_face_type) )
                 
