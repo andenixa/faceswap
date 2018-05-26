@@ -41,9 +41,8 @@ class TrainingDataGeneratorBase(object):
         else:
             self.generators = [iter_utils.SubprocessGenerator ( self.batch_func, self.data[0::2] ),
                                iter_utils.SubprocessGenerator ( self.batch_func, self.data[1::2] )]
-                               
-        self.generator_counter = -1
-            
+
+        self.generator_counter = -1            
         self.onInitialize(**kwargs)
         
     #overridable
@@ -61,17 +60,17 @@ class TrainingDataGeneratorBase(object):
         
     def __next__(self):
         self.generator_counter += 1
-        generator = self.generators[self.generator_counter % len(self.generators) ]    
+        generator = self.generators[self.generator_counter % len(self.generators) ]
         x = next(generator) 
         return x
         
-    def batch_func(self, data):
+    def batch_func(self, data):    
         data_len = len(data)
         if data_len == 0:
             raise ValueError('No training data provided.')
             
         if self.trainingdatatype == TrainingDataType.FACE_YAW_SORTED or self.trainingdatatype == TrainingDataType.FACE_YAW_SORTED_AS_TARGET:
-            if all ( [ x == None for x in self.data] ):
+            if all ( [ x == None for x in data] ):
                 raise ValueError('Not enough training data. Gather more faces!')
              
         if self.trainingdatatype == TrainingDataType.IMAGE or self.trainingdatatype == TrainingDataType.FACE:
@@ -92,20 +91,20 @@ class TrainingDataGeneratorBase(object):
                             shuffle_idxs = [ i for i in range(0, data_len) ]
                             random.shuffle(shuffle_idxs)                            
                         idx = shuffle_idxs.pop()
-                        sample = self.data[ idx ]
+                        sample = data[ idx ]
                     elif self.trainingdatatype == TrainingDataType.FACE_YAW_SORTED or self.trainingdatatype == TrainingDataType.FACE_YAW_SORTED_AS_TARGET:
                         if len(shuffle_idxs) == 0:
                             shuffle_idxs = [ i for i in range(0, data_len) ]
                             random.shuffle(shuffle_idxs)
                         
                         idx = shuffle_idxs.pop()                        
-                        if self.data[idx] != None:
+                        if data[idx] != None:
                             if len(shuffle_idxs_2D[idx]) == 0:
-                                shuffle_idxs_2D[idx] = [ i for i in range(0, len(self.data[idx])) ]
+                                shuffle_idxs_2D[idx] = [ i for i in range(0, len(data[idx])) ]
                                 random.shuffle(shuffle_idxs_2D[idx])
                                 
                             idx2 = shuffle_idxs_2D[idx].pop()                            
-                            sample = self.data[idx][idx2]
+                            sample = data[idx][idx2]
                             
                     if sample is not None:          
                         try:
