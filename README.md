@@ -41,7 +41,9 @@
 - **H128 (3GB+)** - as H64, but in 128 resolution. Better face details. for 3GB and 4GB VRAM model works in reduced mode.
 * H128 Cage:
 * ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H128_Cage_0.jpg)
-
+* H128 asian face on blurry target:
+* ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H128_Asian_0.jpg)
+* ![](https://github.com/iperov/OpenDeepFaceSwap/blob/master/doc/H128_Asian_1.jpg)
 - **DF (5GB+)** - @dfaker model. As H128, but fullface model.
 * DF example - later
 
