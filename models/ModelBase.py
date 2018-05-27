@@ -168,12 +168,12 @@ class ModelBase(object):
         
         check example
         '''
-        pass
+        raise NotImplementedError('Please override this method')
         
     #overridable
     def onSave(self):
         #save your keras models here
-        pass
+        raise NotImplementedError('Please override this method')
 
     #overridable
     def onTrainOneEpoch(self, sample):
