@@ -1,20 +1,25 @@
-import os
-import time
-import inspect
-import operator
-import pickle
-from pathlib import Path
-from utils import Path_utils
-from utils import std_utils
-from utils import image_utils
-import numpy as np
-import cv2
-import gpufmkmgr
-from .TrainingDataGeneratorBase import TrainingDataGeneratorBase
-
 '''
 You can implement your own model. Check examples.
 '''
+
+import cv2
+import gpufmkmgr
+import inspect
+import numpy as np
+import operator
+import os
+from pathlib import Path
+import pickle
+import sys
+import time
+from utils import Path_utils
+from utils import image_utils
+from utils import std_utils
+
+from .TrainingDataGeneratorBase import TrainingDataGeneratorBase
+
+mswindows = sys.platform=="win32"
+
 class ModelBase(object):
 
     #DONT OVERRIDE
@@ -26,6 +31,12 @@ class ModelBase(object):
                         write_preview_history = False,
                         debug = False, **in_options
                 ):
+        
+        if mswindows:  
+            from ctypes import cdll    
+            mydll = cdll.LoadLibrary("user32.dll")
+            mydll.SetProcessDPIAware(True)        
+        
         print ("Loading model...")
         self.model_path = model_path
         self.model_data_path = Path( self.get_strpath_storage_for_file('data.dat') )
