@@ -100,8 +100,10 @@ class ModelBase(object):
                 self.gpu_idxs = [gpu_idx]
         
         self.tf = gpufmkmgr.import_tf(self.gpu_idxs,allow_growth=False)
+        self.tf_sess = gpufmkmgr.get_tf_session()
         self.keras = gpufmkmgr.import_keras()
         self.keras_contrib = gpufmkmgr.import_keras_contrib()
+        
  
         self.onInitialize(**in_options)
         

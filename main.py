@@ -45,7 +45,7 @@ if __name__ == "__main__":
     extract_parser.add_argument('--input-dir', required=True, action=fixPathAction, dest="input_dir", help="Input directory. A directory containing the files you wish to process.")
     extract_parser.add_argument('--output-dir', required=True, action=fixPathAction, dest="output_dir", help="Output directory. This is where the extracted files will be stored.")
     extract_parser.add_argument('--debug', action="store_true", dest="debug", default=False, help="Writes debug images to [output_dir]_debug\ directory.")    
-    extract_parser.add_argument('--face-type', dest="face_type", choices=['full_face', 'avatar', 'mark_only'], default='full_face', help="Don't change this option.")    
+    extract_parser.add_argument('--face-type', dest="face_type", choices=['half_face', 'full_face', 'head', 'avatar', 'mark_only'], default='full_face', help="Default 'full_face'. Don't change this option.")    
     extract_parser.add_argument('--detector', dest="detector", choices=['dlib','mt','manual'], default='dlib', help="Type of detector. Default 'dlib'. 'mt' (MTCNNv1) - faster, better, almost no jitter, perfect for gathering thousands faces for src-set. It is also good for dst-set, but can generate false faces in frames where main face not recognized! In this case for dst-set use either 'dlib' with '--manual-fix' or '--detector manual'. Manual detector suitable only for dst-set.")
     extract_parser.add_argument('--multi-gpu', action="store_true", dest="multi_gpu", default=False, help="Enables multi GPU.")
     extract_parser.add_argument('--manual-fix', action="store_true", dest="manual_fix", default=False, help="Enables manual extract only frames where faces were not recognized.")
@@ -106,37 +106,36 @@ if __name__ == "__main__":
     
     def process_convert(arguments):
         if arguments.ask_for_params:
-            if arguments.model_name != 'AVATAR':
-                try:
-                    mode = int ( input ("Choose mode: (1) hist match, (2) hist match bw, (3) seamless (default), (4) seamless hist match : ") )
-                except:
-                    mode = 3
-                    
-                if mode == 1:
-                    arguments.mode = 'hist-match'
-                elif mode == 2:
-                    arguments.mode = 'hist-match-bw'
-                elif mode == 3:
-                    arguments.mode = 'seamless'
-                elif mode == 4:
-                    arguments.mode = 'seamless-hist-match'
+            try:
+                mode = int ( input ("Choose mode: (1) hist match, (2) hist match bw, (3) seamless (default), (4) seamless hist match : ") )
+            except:
+                mode = 3
                 
-                if arguments.mode == 'hist-match' or arguments.mode == 'hist-match-bw':
-                    try:
-                        choice = int ( input ("Masked hist match? [0..1] (default - model choice) : ") )
-                        arguments.masked_hist_match = (choice != 0)
-                    except:
-                        arguments.masked_hist_match = None               
+            if mode == 1:
+                arguments.mode = 'hist-match'
+            elif mode == 2:
+                arguments.mode = 'hist-match-bw'
+            elif mode == 3:
+                arguments.mode = 'seamless'
+            elif mode == 4:
+                arguments.mode = 'seamless-hist-match'
+            
+            if arguments.mode == 'hist-match' or arguments.mode == 'hist-match-bw':
+                try:
+                    choice = int ( input ("Masked hist match? [0..1] (default - model choice) : ") )
+                    arguments.masked_hist_match = (choice != 0)
+                except:
+                    arguments.masked_hist_match = None               
+            
+            try:
+                arguments.erode_mask_modifier = int ( input ("Choose erode mask modifier [-100..100] (default 0) : ") )
+            except:
+                arguments.erode_mask_modifier = 0
                 
-                try:
-                    arguments.erode_mask_modifier = int ( input ("Choose erode mask modifier [-100..100] (default 0) : ") )
-                except:
-                    arguments.erode_mask_modifier = 0
-                    
-                try:
-                    arguments.blur_mask_modifier = int ( input ("Choose blur mask modifier [-100..200] (default 0) : ") )
-                except:
-                    arguments.blur_mask_modifier = 0
+            try:
+                arguments.blur_mask_modifier = int ( input ("Choose blur mask modifier [-100..200] (default 0) : ") )
+            except:
+                arguments.blur_mask_modifier = 0
     
         arguments.erode_mask_modifier = np.clip ( int(arguments.erode_mask_modifier), -100, 100)
         arguments.blur_mask_modifier = np.clip ( int(arguments.blur_mask_modifier), -100, 200)

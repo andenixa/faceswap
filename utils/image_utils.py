@@ -215,15 +215,15 @@ def hsva2bgra (img):
 def hsva2bgra_list (imgs):
     return [ hsva2bgra(img) for img in imgs ]
     
-def gen_warp_params (source, flip):
+def gen_warp_params (source, flip, rotation_range=[-10,10], scale_range=[-0.5, 0.5], tx_range=[-0.05, 0.05], ty_range=[-0.05, 0.05]  ):
     h,w,c = source.shape
     if (h != w) or (w != 64 and w != 128 and w != 256 and w != 512 and w != 1024):
         raise ValueError ('TrainingDataGenerator accepts only square power of 2 images.')
         
-    rotation = np.random.uniform(-10, 10)
-    scale = np.random.uniform(1 - 0.05, 1 + 0.05)
-    tx = np.random.uniform(-0.05, 0.05)
-    ty = np.random.uniform(-0.05, 0.05)    
+    rotation = np.random.uniform( rotation_range[0], rotation_range[1] )
+    scale = np.random.uniform(1 +scale_range[0], 1 +scale_range[1])
+    tx = np.random.uniform( tx_range[0], tx_range[1] )
+    ty = np.random.uniform( ty_range[0], ty_range[1] ) 
  
     #random warp by grid
     cell_size = [ w // (2**i) for i in range(1,4) ] [ np.random.randint(3) ]

@@ -39,9 +39,12 @@ class TrainingDataGeneratorBase(object):
         if self.debug:
             self.generators = [iter_utils.ThisThreadGenerator ( self.batch_func, self.data)]
         else:
-            self.generators = [iter_utils.SubprocessGenerator ( self.batch_func, self.data[0::2] ),
-                               iter_utils.SubprocessGenerator ( self.batch_func, self.data[1::2] )]
-
+            if len(self.data) > 1:
+                self.generators = [iter_utils.SubprocessGenerator ( self.batch_func, self.data[0::2] ),
+                                   iter_utils.SubprocessGenerator ( self.batch_func, self.data[1::2] )]
+            else:
+                self.generators = [iter_utils.SubprocessGenerator ( self.batch_func, self.data )]
+                
         self.generator_counter = -1            
         self.onInitialize(**kwargs)
         

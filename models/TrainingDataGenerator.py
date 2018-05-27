@@ -31,13 +31,15 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         MASK_EYES            = 0x200000,
         
     #overrided
-    def onInitialize(self, random_flip=False, normalize_tanh=False, output_sample_types=[], **kwargs):
+    def onInitialize(self, random_flip=False, normalize_tanh=False, rotation_range=[-10,10], scale_range=[-0.05, 0.05], tx_range=[-0.05, 0.05], ty_range=[-0.05, 0.05], output_sample_types=[], **kwargs):
         self.random_flip = random_flip        
         self.normalize_tanh = normalize_tanh
         self.output_sample_types = output_sample_types
+        self.rotation_range = rotation_range
+        self.scale_range = scale_range
+        self.tx_range = tx_range
+        self.ty_range = ty_range
         
-        
-
     #overrided
     def onProcessSample(self, sample, debug):
         source = sample.load_bgr()
@@ -48,7 +50,7 @@ class TrainingDataGenerator(TrainingDataGeneratorBase):
         if debug and is_face_sample:
             LandmarksProcessor.draw_landmarks (source, sample.landmarks, (0, 1, 0))
 
-        params = image_utils.gen_warp_params(source, self.random_flip)
+        params = image_utils.gen_warp_params(source, self.random_flip, rotation_range=self.rotation_range, scale_range=self.scale_range, tx_range=self.tx_range, ty_range=self.ty_range )
 
         images = [[None]*3 for _ in range(4)]
             
